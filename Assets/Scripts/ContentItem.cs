@@ -10,5 +10,10 @@ public class ContentItem : MonoBehaviour
 
     public float Width {  get => RectTransform.sizeDelta.x; }
     public float Height { get => RectTransform.sizeDelta.y; }
+
+    public void SetActive(bool active)
+    {
+        gameObject.SetActive(active);
+    }
     
 }

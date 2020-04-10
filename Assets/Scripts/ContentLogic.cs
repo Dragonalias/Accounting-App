@@ -29,24 +29,28 @@ public class ContentLogic : MonoBehaviour
 
     public void AddContentItem(ContentItem item, int column)
     {
-        
-        contentItems[column].Add(item);
         SetContentItemPos(item, column, contentItems[column].Count);
+        contentItems[column].Add(item);
     }
 
-    public void RemoveContentItem(ContentItem item, Vector2Int listPos)
+    public void RemoveContentItem(Vector2Int listPos)
     {
+        if (contentItems[listPos.x].Count == 0)
+        {
+            Debug.LogError("How did it get to this?");
+            return;
+        }
+
         //Move every item under it up
         if(listPos.y < contentItems[listPos.x].Count)
         {
             for (int i = listPos.y +1; i < contentItems[listPos.x].Count; i++)
             {
-                SetContentItemPos(contentItems[listPos.x][i], listPos.x, listPos.y);
+                SetContentItemPos(contentItems[listPos.x][i], listPos.x, i-1);
             }
         }
-        item.gameObject.SetActive(false);
+        contentItems[listPos.x][listPos.y].SetActive(false);
         contentItems[listPos.x].RemoveAt(listPos.y);
-
     }
 
     private void SetContentItemPos(ContentItem item, int column, int row)

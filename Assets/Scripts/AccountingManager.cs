@@ -25,6 +25,7 @@ public class AccountingManager : MonoBehaviour
     public void AddContentItem(int column)
     {
         var contentItem = ContentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
+        contentItem.SetActive(true);
         contentLogic.AddContentItem(contentItem, column);
     }
 
@@ -38,6 +39,10 @@ public class AccountingManager : MonoBehaviour
         {
             AddColumn();
             column++;
+        }
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            contentLogic.RemoveContentItem(new Vector2Int(column, 0));
         }
     }
 }
