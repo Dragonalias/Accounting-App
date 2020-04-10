@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,6 +25,10 @@ public class AccountingManager : MonoBehaviour
     {
         contentLogic.AddColumn();
     }
+    private void RemoveColumn(int column)
+    {
+        contentLogic.RemoveColumn(column);
+    }
     public void AddContentItem(int column)
     {
         var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
@@ -37,14 +42,27 @@ public class AccountingManager : MonoBehaviour
         {
             AddContentItem(column);
         }
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            AddColumn();
             column++;
+            Debug.Log(Time.deltaTime + " At column: " + column);
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            column--;
+            Debug.Log(Time.deltaTime + " At column: " + column);
         }
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            contentLogic.RemoveContentItem(new Vector2Int(column, 0));
+            RemoveColumn(column);
+            Debug.Log(Time.deltaTime + " REmoving column " + column);
+        }
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            AddColumn();
+            Debug.Log(Time.deltaTime + " Adding colomn!");
         }
     }
+
+   
 }

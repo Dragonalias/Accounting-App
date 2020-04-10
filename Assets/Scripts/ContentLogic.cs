@@ -40,13 +40,42 @@ public class ContentLogic : MonoBehaviour
         ChangeWidth(RowWidth());
     }
 
+    //Todo: make
     public void RemoveColumn(int column)
     {
-        if(column == contentItems.Count)
+        if(column != contentItems.Count)
         {
-
+            for (int i = column +1; i < contentItems.Count; i++)
+            {
+                MoveEntireColumnOneLeft(i);
+            }
         }
+
+        RemoveEntireColumn(column);
         contentItems.RemoveAt(column);
+        if(longestColumn == column) //The biggest column is gone. find new one
+        {
+            FindHeighestColumn();
+        }
+        else if(longestColumn > column)//Every column was moved one to the left
+        {
+            longestColumn--;
+        }
+        
+    }
+    private void RemoveEntireColumn(int column)
+    {
+        for (int i = 0; i < contentItems[column].Count; i++)
+        {
+            contentItems[column].GetContentItem(i).SetActive(false);
+        }
+    }
+    private void MoveEntireColumnOneLeft(int columnToBeMoved)
+    {
+        for (int i = 0; i < contentItems[columnToBeMoved].Count; i++)
+        {
+            SetContentItemPos(contentItems[columnToBeMoved].GetContentItem(i), columnToBeMoved - 1, i);
+        }
     }
 
     public void AddContentItem(ContentItem item, int column)
@@ -109,6 +138,21 @@ public class ContentLogic : MonoBehaviour
         }
         return false;
     }
+    private void FindHeighestColumn()
+    {
+        float highestNumber = 0;
+        int highestColumnNumber = 0;
+        for (int i = 0; i < contentItems.Count; i++)
+        {
+            if (contentItems[i].columnHeight > highestNumber)
+            {
+                highestNumber = contentItems[i].columnHeight;
+                highestColumnNumber = i;
+            }
+        }
+        longestColumn = highestColumnNumber;
+        ChangeHeight(highestNumber);
+    }
     private void ChangeHeightLogic(int column)
     {
         var newHeight = ColumnHeight(column);
@@ -121,6 +165,7 @@ public class ContentLogic : MonoBehaviour
             }
         }
 
+        //update on remove
         if (newHeight > contentItems[longestColumn].columnHeight)
         {
             longestColumn = column;
