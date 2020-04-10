@@ -8,9 +8,11 @@ public class AccountingManager : MonoBehaviour
     private ContentLogic contentLogic;
 
     [SerializeField]
-    private PoolObject ContentItem;
+    private PoolObject contentItem;
 
     private int column = 0;
+
+    public ContentItem ContentItem { get => contentItem.GetComponent<ContentItem>(); }
 
     private void Start()
     {
@@ -24,7 +26,7 @@ public class AccountingManager : MonoBehaviour
     }
     public void AddContentItem(int column)
     {
-        var contentItem = ContentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
+        var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
         contentItem.SetActive(true);
         contentLogic.AddContentItem(contentItem, column);
     }
