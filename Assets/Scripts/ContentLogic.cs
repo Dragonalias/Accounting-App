@@ -13,24 +13,28 @@ public class ContentLogic : MonoBehaviour
 
     private List<List<ContentItem>> contentItems;
     private AccountingManager manager;
-    private Vector2 contentPos;
+    private Vector2 dummyVector;
 
     public void Init(AccountingManager manager)
     {
         this.manager = manager;
         contentItems = new List<List<ContentItem>>();
-        contentPos = new Vector2();
+        dummyVector = new Vector2();
     }
 
     public void AddColumn()
     {
         contentItems.Add(new List<ContentItem>());
+
+        ChangeWidth(RowWidth());
     }
 
     public void AddContentItem(ContentItem item, int column)
     {
         SetContentItemPos(item, column, contentItems[column].Count);
         contentItems[column].Add(item);
+
+        ChangeHeight(ColumnHeight(column));
     }
 
     public void RemoveContentItem(Vector2Int listPos)
@@ -51,24 +55,37 @@ public class ContentLogic : MonoBehaviour
         }
         contentItems[listPos.x][listPos.y].SetActive(false);
         contentItems[listPos.x].RemoveAt(listPos.y);
+
+        ChangeHeight(ColumnHeight(listPos.x));
     }
 
     private void SetContentItemPos(ContentItem item, int column, int row)
     {
-        contentPos.Set(item.Width * column + paddingBetweenColumns * column, item.Height * row + paddingBetweenRows * row);
-        item.RectTransform.anchoredPosition = contentPos;
+        dummyVector.Set(item.Width * column + paddingBetweenColumns * column, item.Height * row + paddingBetweenRows * row);
+        item.RectTransform.anchoredPosition = dummyVector;
     }
 
-    private void ChangeHeight(float heightAdded)
+    private float ColumnHeight(int column)
     {
-        rt.sizeDelta = new Vector2(rt.sizeDelta.x, rt.sizeDelta.y + heightAdded);
+        return contentItems[column].Count * contentItems[column][0].Height + paddingBetweenRows * contentItems[column].Count;
     }
-    private void ChangeWidth(float widthAdded)
+    private float RowWidth()
     {
-        rt.sizeDelta = new Vector2(rt.sizeDelta.x + widthAdded, rt.sizeDelta.y);
+        return contentItems.Count * contentItems[0][0].Width + paddingBetweenColumns * contentItems.Count;
     }
-    private void ChangeHeightWidth(float widthAdded, float heightAdded)
+    private void ChangeHeight(float newHeight)
     {
-        rt.sizeDelta = new Vector2(rt.sizeDelta.x + widthAdded, rt.sizeDelta.y + heightAdded);
+        dummyVector.Set(rt.sizeDelta.x, newHeight);
+        rt.sizeDelta = dummyVector;
+    }
+    private void ChangeWidth(float newWidth)
+    {
+        dummyVector.Set(newWidth, rt.sizeDelta.y);
+        rt.sizeDelta = dummyVector;
+    }
+    private void ChangeHeightWidth(float newWidth, float newHeight)
+    {
+        dummyVector.Set(newWidth, newHeight);
+        rt.sizeDelta = dummyVector;
     }
 }
