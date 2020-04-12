@@ -16,5 +16,14 @@ public class ContentItem : MonoBehaviour
     {
         gameObject.SetActive(active);
     }
+
+    public string GetData()
+    {
+        return this.ToString();
+    }
+    public void SetData(string data)
+    {
+
+    }
     
 }

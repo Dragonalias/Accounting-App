@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,20 +16,20 @@ public class ContentLogic : MonoBehaviour
     [SerializeField]
     private float rowHeight = 150;
 
-    [HideInInspector]
-    public List<Column> contentItems;
+    private List<Column> contentItems;
     private int longestColumn = 0;
-
     private AccountingManager manager;
     private Vector2 dummyVector;
     private float oneColumnWidth;
     private float oneRowHeight;
 
+    public List<Column> ContentItems { get => contentItems; set => contentItems = value; }
+
     public void Init(AccountingManager manager)
     {
         this.manager = manager;
 
-        contentItems = new List<Column>();
+        ContentItems = new List<Column>();
         dummyVector = new Vector2();
 
         oneColumnWidth = columnWidth + paddingBetweenColumns;
@@ -37,7 +38,7 @@ public class ContentLogic : MonoBehaviour
 
     public void AddColumn()
     {
-        contentItems.Add(new Column());
+        ContentItems.Add(new Column());
 
         ChangeWidth(RowWidth());
     }
@@ -45,16 +46,16 @@ public class ContentLogic : MonoBehaviour
     //Todo: make
     public void RemoveColumn(int column)
     {
-        if(column != contentItems.Count)
+        if(column != ContentItems.Count)
         {
-            for (int i = column +1; i < contentItems.Count; i++)
+            for (int i = column +1; i < ContentItems.Count; i++)
             {
                 MoveEntireColumnOneLeft(i);
             }
         }
 
         RemoveEntireColumn(column);
-        contentItems.RemoveAt(column);
+        ContentItems.RemoveAt(column);
         if(longestColumn == column) //The biggest column is gone. find new one
         {
             FindHeighestColumn();
@@ -67,45 +68,66 @@ public class ContentLogic : MonoBehaviour
     }
     private void RemoveEntireColumn(int column)
     {
-        for (int i = 0; i < contentItems[column].Count; i++)
+        for (int i = 0; i < ContentItems[column].Count; i++)
         {
-            contentItems[column].GetContentItem(i).SetActive(false);
+            ContentItems[column].GetContentItem(i).SetActive(false);
         }
     }
     private void MoveEntireColumnOneLeft(int columnToBeMoved)
     {
-        for (int i = 0; i < contentItems[columnToBeMoved].Count; i++)
+        for (int i = 0; i < ContentItems[columnToBeMoved].Count; i++)
         {
-            SetContentItemPos(contentItems[columnToBeMoved].GetContentItem(i), columnToBeMoved - 1, i);
+            SetContentItemPos(ContentItems[columnToBeMoved].GetContentItem(i), columnToBeMoved - 1, i);
         }
     }
 
-    public void AddContentItem(ContentItem item, int column)
+    public void InsertContentItem(ContentItem item, int column, int row)
     {
-        SetContentItemPos(item, column, contentItems[column].Count);
-        contentItems[column].Add(item);
+        ItemSizeCheck(item);
+        SetContentItemPos(item, column, row);
+        ContentItems[column].Insert(row, item);
 
         ChangeHeightLogic(column);
     }
 
+    private void ItemSizeCheck(ContentItem item)
+    {
+        if (item.Width < columnWidth && item.Height < rowHeight)
+        {
+            return;
+        }
+
+        dummyVector.Set(item.Width, item.Height);
+
+        if(item.Width > columnWidth)
+        {
+            dummyVector.x = columnWidth;
+        }
+        if(item.Height > rowHeight)
+        {
+            dummyVector.y = rowHeight;
+        }
+        item.RectTransform.sizeDelta = dummyVector;
+    }
+
     public void RemoveContentItem(Vector2Int listPos)
     {
-        if (contentItems[listPos.x].Count == 0)
+        if (ContentItems[listPos.x].Count == 0)
         {
             Debug.LogError("How did it get to this?");
             return;
         }
 
         //Move every item under it up
-        if(listPos.y < contentItems[listPos.x].Count)
+        if(listPos.y < ContentItems[listPos.x].Count)
         {
-            for (int i = listPos.y +1; i < contentItems[listPos.x].Count; i++)
+            for (int i = listPos.y +1; i < ContentItems[listPos.x].Count; i++)
             {
-                SetContentItemPos(contentItems[listPos.x].GetContentItem(i), listPos.x, i-1);
+                SetContentItemPos(ContentItems[listPos.x].GetContentItem(i), listPos.x, i-1);
             }
         }
-        contentItems[listPos.x].GetContentItem(listPos.y).SetActive(false);
-        contentItems[listPos.x].RemoveAt(listPos.y);
+        ContentItems[listPos.x].GetContentItem(listPos.y).SetActive(false);
+        ContentItems[listPos.x].RemoveAt(listPos.y);
 
         ChangeHeightLogic(listPos.x);
     }
@@ -115,26 +137,26 @@ public class ContentLogic : MonoBehaviour
         dummyVector.Set(oneColumnWidth * column, (oneRowHeight * row) * -1); //down is negative, so gotta flip
         item.RectTransform.anchoredPosition = dummyVector;
 
-        if(row < contentItems[column].Count)
+        if(row < ContentItems[column].Count)
         {
-            SetContentItemPos(contentItems[column].GetContentItem(row), column, row + 1);
+            SetContentItemPos(ContentItems[column].GetContentItem(row), column, row + 1);
         }
     }
 
     private float ColumnHeight(int column)
     {
-        return contentItems[column].Count * oneRowHeight;
+        return ContentItems[column].Count * oneRowHeight;
     }
     private float RowWidth()
     {
-        return contentItems.Count * oneColumnWidth;
+        return ContentItems.Count * oneColumnWidth;
     }
 
     private bool CheckAllColumnHeights(float heightToCompare)
     {
-        for (int i = 0; i < contentItems.Count; i++)
+        for (int i = 0; i < ContentItems.Count; i++)
         {
-            if (contentItems[i].columnHeight > heightToCompare)
+            if (ContentItems[i].columnHeight > heightToCompare)
             {
                 if (i == longestColumn) break;
 
@@ -148,11 +170,11 @@ public class ContentLogic : MonoBehaviour
     {
         float highestNumber = 0;
         int highestColumnNumber = 0;
-        for (int i = 0; i < contentItems.Count; i++)
+        for (int i = 0; i < ContentItems.Count; i++)
         {
-            if (contentItems[i].columnHeight > highestNumber)
+            if (ContentItems[i].columnHeight > highestNumber)
             {
-                highestNumber = contentItems[i].columnHeight;
+                highestNumber = ContentItems[i].columnHeight;
                 highestColumnNumber = i;
             }
         }
@@ -165,20 +187,20 @@ public class ContentLogic : MonoBehaviour
 
         if (column == longestColumn)
         {
-            if (newHeight < contentItems[longestColumn].columnHeight && !CheckAllColumnHeights(newHeight))
+            if (newHeight < ContentItems[longestColumn].columnHeight && !CheckAllColumnHeights(newHeight))
             {
                 ChangeHeight(newHeight);
             }
         }
 
         //update on remove
-        if (newHeight > contentItems[longestColumn].columnHeight)
+        if (newHeight > ContentItems[longestColumn].columnHeight)
         {
             longestColumn = column;
             ChangeHeight(newHeight);
         }
 
-        contentItems[column].columnHeight = newHeight;
+        ContentItems[column].columnHeight = newHeight;
     }
     private void ChangeHeight(float newHeight)
     {
@@ -197,7 +219,6 @@ public class ContentLogic : MonoBehaviour
     }
 }
 
-[System.Serializable]
 public class Column
 {
     public float columnHeight = 0;

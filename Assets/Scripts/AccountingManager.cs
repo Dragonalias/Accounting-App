@@ -37,11 +37,11 @@ public class AccountingManager : MonoBehaviour
     {
         contentLogic.RemoveColumn(column);
     }
-    private void InsertContentItem(int column, int row, ContentItem item = null)
+    private void InsertContentItem(int column, int row, string itemData = null)
     {
         var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
         contentItem.SetActive(true);
-        if (item != null) contentItem = item;
+        if (itemData != null) contentItem.SetData(itemData);
         contentLogic.InsertContentItem(contentItem, column, row);
     }
 
@@ -52,7 +52,8 @@ public class AccountingManager : MonoBehaviour
 
     public void Save()
     {
-        string json = JsonUtility.ToJson(contentLogic.contentItems);
+        SaveObject saveobj = new SaveObject(contentLogic.ContentItems);
+        string json = JsonUtility.ToJson(saveobj);
         SaveSystem.Save("save.json", json);
         Debug.Log("SAving: " + json);
     }
@@ -61,18 +62,18 @@ public class AccountingManager : MonoBehaviour
     {
         string loadedString = SaveSystem.Load("save.json");
         Debug.Log("loaded: " +loadedString);
-        var loadedFile = JsonUtility.FromJson<List<Column>>(loadedString);
+        var loadedFile = JsonUtility.FromJson<SaveObject>(loadedString);
 
         PopulateUI(loadedFile);
     }
-    private void PopulateUI(List<Column> list)
+    private void PopulateUI(SaveObject saveobj)
     {
-        for (int i = 0; i < list.Count; i++)
+        for (int i = 0; i < saveobj.columnRowAmount.Count; i++)
         {
             AddColumn();
-            for (int j = 0; j < list[i].Count; j++)
+            for (int j = 0; j < saveobj.columnRowAmount[i]; j++)
             {
-                InsertContentItem(i, j, list[i].GetContentItem(j));
+                InsertContentItem(i, j, saveobj.contentItemData[j]);
             }
         }
     }
@@ -81,7 +82,7 @@ public class AccountingManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            InsertContentItem(column, contentLogic.contentItems[column].Count);
+            InsertContentItem(column, contentLogic.ContentItems[column].Count);
         }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
@@ -113,4 +114,27 @@ public class AccountingManager : MonoBehaviour
         }
     }
 
+}
+
+[System.Serializable]
+public class SaveObject
+{
+    public List<int> columnRowAmount;
+    public List<string> contentItemData;
+
+    public SaveObject(List<Column> list)
+    {
+        columnRowAmount = new List<int>();
+        contentItemData = new List<string>();
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            columnRowAmount.Add(list[i].Count);
+            for (int j = 0; j < list[i].Count; j++)
+            {
+                contentItemData.Add(list[i].GetContentItem(j).GetData());
+            }
+        }
+        
+    }
 }
