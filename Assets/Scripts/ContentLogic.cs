@@ -10,17 +10,19 @@ public class ContentLogic : MonoBehaviour
     private float paddingBetweenRows;
     [SerializeField]
     private float paddingBetweenColumns;
+    [SerializeField]
+    private float columnWidth = 345;
+    [SerializeField]
+    private float rowHeight = 150;
 
-    [SerializeField, HideInInspector]
-    private List<Column> contentItems;
-    [SerializeField, HideInInspector]
+    [HideInInspector]
+    public List<Column> contentItems;
     private int longestColumn = 0;
 
     private AccountingManager manager;
     private Vector2 dummyVector;
-    private float oneItemAndPaddingWidth;
-    private float oneItemAndPaddingHeight;
-
+    private float oneColumnWidth;
+    private float oneRowHeight;
 
     public void Init(AccountingManager manager)
     {
@@ -29,8 +31,8 @@ public class ContentLogic : MonoBehaviour
         contentItems = new List<Column>();
         dummyVector = new Vector2();
 
-        oneItemAndPaddingWidth = manager.ContentItem.Width + paddingBetweenColumns;
-        oneItemAndPaddingHeight = manager.ContentItem.Height + paddingBetweenRows;
+        oneColumnWidth = columnWidth + paddingBetweenColumns;
+        oneRowHeight = rowHeight + paddingBetweenRows;
     }
 
     public void AddColumn()
@@ -110,18 +112,22 @@ public class ContentLogic : MonoBehaviour
 
     private void SetContentItemPos(ContentItem item, int column, int row)
     {
-        dummyVector.Set(oneItemAndPaddingWidth * column, (oneItemAndPaddingHeight * row) * -1); //down is negative, so gotta flip
+        dummyVector.Set(oneColumnWidth * column, (oneRowHeight * row) * -1); //down is negative, so gotta flip
         item.RectTransform.anchoredPosition = dummyVector;
+
+        if(row < contentItems[column].Count)
+        {
+            SetContentItemPos(contentItems[column].GetContentItem(row), column, row + 1);
+        }
     }
 
     private float ColumnHeight(int column)
     {
-        if (contentItems[column].Count == 0) return 0;
-        return contentItems[column].Count * oneItemAndPaddingHeight;
+        return contentItems[column].Count * oneRowHeight;
     }
     private float RowWidth()
     {
-        return contentItems.Count * oneItemAndPaddingWidth;
+        return contentItems.Count * oneColumnWidth;
     }
 
     private bool CheckAllColumnHeights(float heightToCompare)
@@ -191,6 +197,7 @@ public class ContentLogic : MonoBehaviour
     }
 }
 
+[System.Serializable]
 public class Column
 {
     public float columnHeight = 0;
@@ -199,7 +206,11 @@ public class Column
     public int Count { get => contentItems.Count; }
     public void Add(ContentItem item)
     {
-        contentItems.Add(item);
+        contentItems.Add(item); 
+    }
+    public void Insert(int i, ContentItem item)
+    {
+        contentItems.Insert(i, item);
     }
     public void RemoveAt(int i)
     {

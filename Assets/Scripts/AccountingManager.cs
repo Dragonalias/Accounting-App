@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine;
+
 
 public class AccountingManager : MonoBehaviour
 {
@@ -11,10 +10,19 @@ public class AccountingManager : MonoBehaviour
     [SerializeField]
     private PoolObject contentItem;
 
+    [SerializeField]
+    private GameObject MainMenu;
+    [SerializeField]
+    private GameObject AddPeopleMenu;
+
     private int column = 0;
 
     public ContentItem ContentItem { get => contentItem.GetComponent<ContentItem>(); }
 
+    private void Awake()
+    {
+        SaveSystem.Init();
+    }
     private void Start()
     {
         contentLogic.Init(this);
@@ -29,18 +37,59 @@ public class AccountingManager : MonoBehaviour
     {
         contentLogic.RemoveColumn(column);
     }
-    public void AddContentItem(int column)
+    private void InsertContentItem(int column, int row, ContentItem item = null)
     {
         var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
         contentItem.SetActive(true);
-        contentLogic.AddContentItem(contentItem, column);
+        if (item != null) contentItem = item;
+        contentLogic.InsertContentItem(contentItem, column, row);
+    }
+
+    public void AddPeople()
+    {
+
+    }
+
+    public void Save()
+    {
+        string json = JsonUtility.ToJson(contentLogic.contentItems);
+        SaveSystem.Save("save.json", json);
+        Debug.Log("SAving: " + json);
+    }
+
+    public void Load(string monthAndYear)
+    {
+        string loadedString = SaveSystem.Load("save.json");
+        Debug.Log("loaded: " +loadedString);
+        var loadedFile = JsonUtility.FromJson<List<Column>>(loadedString);
+
+        PopulateUI(loadedFile);
+    }
+    private void PopulateUI(List<Column> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            AddColumn();
+            for (int j = 0; j < list[i].Count; j++)
+            {
+                InsertContentItem(i, j, list[i].GetContentItem(j));
+            }
+        }
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            AddContentItem(column);
+            InsertContentItem(column, contentLogic.contentItems[column].Count);
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            Load("");
+        }
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            Save();
         }
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -64,5 +113,4 @@ public class AccountingManager : MonoBehaviour
         }
     }
 
-   
 }
