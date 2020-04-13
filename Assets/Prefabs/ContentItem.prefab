@@ -390,6 +390,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rectTransform: {fileID: 9063514762520589726}
+  inputField: {fileID: 9063514762520589731}
 --- !u!114 &9063514762520589725
 MonoBehaviour:
   m_ObjectHideFlags: 0

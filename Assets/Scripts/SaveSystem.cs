@@ -23,11 +23,12 @@ public static class SaveSystem
     }
     public static string Load(string saveName)
     {
-        if(!File.Exists(SAVE_FOLDER + saveName))
+        string filePath = SAVE_FOLDER + "/" + saveName;
+        if (!File.Exists(filePath))
         {
             Debug.LogError("No file found!");
             return null;
         }
-        return File.ReadAllText(SAVE_FOLDER + saveName);
+        return File.ReadAllText(filePath);
     }
 }
