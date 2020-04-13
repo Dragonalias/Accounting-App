@@ -16,6 +16,7 @@ public class AccountingManager : MonoBehaviour
     private GameObject AddPeopleMenu;
 
     private int column = 0;
+    private uint amountOfPeople = 0;
 
     public ContentItem ContentItem { get => contentItem.GetComponent<ContentItem>(); }
 
@@ -45,16 +46,21 @@ public class AccountingManager : MonoBehaviour
         contentLogic.InsertContentItem(contentItem, column, row);
     }
 
-    public void AddPeople()
+    public void AddPerson()
     {
-
+        amountOfPeople++;
+        AddColumn();
+    }
+    public void DeletePerson()
+    {
+        amountOfPeople--;
     }
 
-    public void Save()
+    public void Save(string saveName)
     {
-        SaveObject saveobj = new SaveObject(contentLogic.ContentItems);
+        SaveObject saveobj = new SaveObject(contentLogic.ContentItems, amountOfPeople);
         string json = JsonUtility.ToJson(saveobj);
-        SaveSystem.Save("save.json", json);
+        SaveSystem.Save(saveName + ".json", json);
         Debug.Log("SAving: " + json);
     }
 
@@ -68,6 +74,8 @@ public class AccountingManager : MonoBehaviour
     }
     private void PopulateUI(SaveObject saveobj)
     {
+        this.amountOfPeople = saveobj.amountOfPeople;
+
         for (int i = 0; i < saveobj.columnRowAmount.Count; i++)
         {
             AddColumn();
@@ -87,10 +95,6 @@ public class AccountingManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             Load("");
-        }
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            Save();
         }
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -121,9 +125,11 @@ public class SaveObject
 {
     public List<int> columnRowAmount;
     public List<string> contentItemData;
+    public uint amountOfPeople;
 
-    public SaveObject(List<Column> list)
+    public SaveObject(List<Column> list, uint amountOfPeople)
     {
+        this.amountOfPeople = amountOfPeople;
         columnRowAmount = new List<int>();
         contentItemData = new List<string>();
 
