@@ -15,7 +15,7 @@ public static class SaveSystem
     public static void Save(string saveName, string saveString)
     {
         string filePath = SAVE_FOLDER + "/" + saveName;
-        if (Directory.Exists(filePath))
+        if (File.Exists(filePath))
         {
             Debug.LogError("Overriding a save!");
         }
