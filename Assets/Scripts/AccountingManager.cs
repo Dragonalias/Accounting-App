@@ -27,9 +27,27 @@ public class AccountingManager : MonoBehaviour
     private void Start()
     {
         contentLogic.Init(this);
+        contentLogic.HeightChangedHandler += RowCountHandler;
         AddColumn();
     }
 
+    private void RowCountHandler(int rowCount)
+    {
+        var rowCountAmount = contentLogic.ContentItems[0].Count;
+        if (rowCount > rowCountAmount)
+        {
+            AddRow(rowCount);
+        }
+        else if (rowCount < rowCountAmount)
+        {
+            RemoveContentItem(0, rowCountAmount);
+        }
+    }
+
+    private void AddRow(int row)
+    {
+        InsertContentItem(CreateContentItem(TMPro.TMP_InputField.ContentType.IntegerNumber, row.ToString(), false), 0, row);
+    }
     public void AddColumn()
     {
         contentLogic.AddColumn();
@@ -38,12 +56,29 @@ public class AccountingManager : MonoBehaviour
     {
         contentLogic.RemoveColumn(column);
     }
-    private void InsertContentItem(int column, int row, string itemData = null)
+    private void InsertContentItem(ContentItem contentItem, int column, int row, string itemJsonData = null)
+    {
+        if (itemJsonData != null) contentItem.SetData(itemJsonData);
+
+        contentLogic.InsertContentItem(contentItem, column, row);
+    }
+    private ContentItem CreateContentItem(TMPro.TMP_InputField.ContentType type, string text, bool interactible)
     {
         var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
-        contentItem.SetActive(true);
-        if (itemData != null) contentItem.SetData(itemData);
-        contentLogic.InsertContentItem(contentItem, column, row);
+        contentItem.SetType(type);
+        contentItem.SetText(text);
+        contentItem.SetInteractable(interactible);
+        return contentItem;
+    }
+    private ContentItem CreateContentItem(string jsonData)
+    {
+        var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
+        contentItem.SetData(jsonData);
+        return contentItem;
+    }
+    private void RemoveContentItem(int column, int row)
+    {
+        contentLogic.RemoveContentItem(new Vector2Int(column, row));
     }
 
     public void AddPerson()
@@ -81,17 +116,13 @@ public class AccountingManager : MonoBehaviour
             AddColumn();
             for (int j = 0; j < saveobj.columnRowAmount[i]; j++)
             {
-                InsertContentItem(i, j, saveobj.contentItemData[j]);
+                InsertContentItem(CreateContentItem(saveobj.contentItemData[j]), i, j);
             }
         }
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            InsertContentItem(column, contentLogic.ContentItems[column].Count);
-        }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             Load("");

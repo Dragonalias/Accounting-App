@@ -23,6 +23,9 @@ public class ContentLogic : MonoBehaviour
     private float oneColumnWidth;
     private float oneRowHeight;
 
+    public delegate void HeightChangedEvent(int row);
+    public event HeightChangedEvent HeightChangedHandler;
+
     public List<Column> ContentItems { get => contentItems; set => contentItems = value; }
 
     public void Init(AccountingManager manager)
@@ -85,6 +88,7 @@ public class ContentLogic : MonoBehaviour
     {
         ItemSizeCheck(item);
         SetContentItemPos(item, column, row);
+        item.SetActive(true);
         ContentItems[column].Insert(row, item);
 
         ChangeHeightLogic(column);
@@ -154,7 +158,7 @@ public class ContentLogic : MonoBehaviour
 
     private bool CheckAllColumnHeights(float heightToCompare)
     {
-        for (int i = 0; i < ContentItems.Count; i++)
+        for (int i = 1; i < ContentItems.Count; i++)
         {
             if (ContentItems[i].columnHeight > heightToCompare)
             {
@@ -170,7 +174,7 @@ public class ContentLogic : MonoBehaviour
     {
         float highestNumber = 0;
         int highestColumnNumber = 0;
-        for (int i = 0; i < ContentItems.Count; i++)
+        for (int i = 1; i < ContentItems.Count; i++)
         {
             if (ContentItems[i].columnHeight > highestNumber)
             {
@@ -204,6 +208,7 @@ public class ContentLogic : MonoBehaviour
     }
     private void ChangeHeight(float newHeight)
     {
+        HeightChangedHandler?.Invoke(contentItems[longestColumn].Count);
         dummyVector.Set(rt.sizeDelta.x, newHeight);
         rt.sizeDelta = dummyVector;
     }

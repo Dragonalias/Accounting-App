@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class ContentItem : MonoBehaviour
 {
+    private ContentSaveData saveData = null;
+
     [SerializeField]
     private RectTransform rectTransform;
     public RectTransform RectTransform { get => rectTransform; }
@@ -20,25 +22,57 @@ public class ContentItem : MonoBehaviour
     public void SetActive(bool active)
     {
         gameObject.SetActive(active);
+        if (saveData == null) saveData = new ContentSaveData();
     }
 
     public string GetData()
     {
-        return InputField.text + "_" + InputField.contentType;
+        return JsonUtility.ToJson(saveData);
     }
     public void SetType(TMP_InputField.ContentType type)
     {
         InputField.contentType = type;
+        saveData.type = type;
+    }
+    public void SetInteractable(bool activity)
+    {
+        InputField.interactable = activity;
+        saveData.isInteractable = activity;
+    }
+
+    public void SetText(string text)
+    {
+        InputField.text = text;
+        saveData.textData = text;
     }
     public void SetData(string data)
     {
-        var dataSplit = data.Split('_');
-        InputField.text = dataSplit[0]; Debug.Log(dataSplit[1]);
-        SetType((TMP_InputField.ContentType)System.Enum.Parse(typeof(TMP_InputField.ContentType), dataSplit[1]));
+        var getData = JsonUtility.FromJson<ContentSaveData>(data);
+        SetData(getData);
     }
-    public void ResetData()
+    public void SetData(ContentSaveData data)
     {
-        InputField.text = "";
+        SetText(data.textData);
+        SetType(data.type);
+        SetInteractable(data.isInteractable);
     }
     
+}
+
+public class ContentSaveData
+{
+    public string textData;
+    public TMP_InputField.ContentType type;
+    public bool isInteractable;
+
+    public ContentSaveData()
+    {
+
+    }
+    public ContentSaveData(string textData, TMP_InputField.ContentType type, bool isInteractable)
+    {
+        this.textData = textData;
+        this.type = type;
+        this.isInteractable = isInteractable;
+    }
 }
