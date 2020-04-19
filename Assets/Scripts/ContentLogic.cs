@@ -23,9 +23,6 @@ public class ContentLogic : MonoBehaviour
     private float oneColumnWidth;
     private float oneRowHeight;
 
-    public delegate void HeightChangedEvent(int row);
-    public event HeightChangedEvent HeightChangedHandler;
-
     public List<Column> ContentItems { get => contentItems; set => contentItems = value; }
 
     public void Init(AccountingManager manager)
@@ -39,17 +36,24 @@ public class ContentLogic : MonoBehaviour
         oneRowHeight = rowHeight + paddingBetweenRows;
     }
 
-    public void AddColumn()
+    public void InsertColumn(int column)
     {
-        ContentItems.Add(new Column());
+        if (column != ContentItems.Count)
+        {
+            for (int i = column; i < ContentItems.Count; i++)
+            {
+                MoveEntireColumnOneRight(i);
+            }
+        }
 
+        ContentItems.Insert(column, new Column());
         ChangeWidth(RowWidth());
     }
 
     //Todo: make
     public void RemoveColumn(int column)
     {
-        if(column != ContentItems.Count)
+        if(column != ContentItems.Count -1)
         {
             for (int i = column +1; i < ContentItems.Count; i++)
             {
@@ -83,12 +87,18 @@ public class ContentLogic : MonoBehaviour
             SetContentItemPos(ContentItems[columnToBeMoved].GetContentItem(i), columnToBeMoved - 1, i);
         }
     }
+    private void MoveEntireColumnOneRight(int columnToBeMoved)
+    {
+        for (int i = 0; i < ContentItems[columnToBeMoved].Count; i++)
+        {
+            SetContentItemPos(ContentItems[columnToBeMoved].GetContentItem(i), columnToBeMoved +1, i);
+        }
+    }
 
     public void InsertContentItem(ContentItem item, int column, int row)
     {
         ItemSizeCheck(item);
         SetContentItemPos(item, column, row);
-        item.SetActive(true);
         ContentItems[column].Insert(row, item);
 
         ChangeHeightLogic(column);
@@ -140,7 +150,10 @@ public class ContentLogic : MonoBehaviour
     {
         dummyVector.Set(oneColumnWidth * column, (oneRowHeight * row) * -1); //down is negative, so gotta flip
         item.RectTransform.anchoredPosition = dummyVector;
+        item.Column = column;
+        item.Row = row;
 
+        if (column == ContentItems.Count) return;
         if(row < ContentItems[column].Count)
         {
             SetContentItemPos(ContentItems[column].GetContentItem(row), column, row + 1);
@@ -208,7 +221,6 @@ public class ContentLogic : MonoBehaviour
     }
     private void ChangeHeight(float newHeight)
     {
-        HeightChangedHandler?.Invoke(contentItems[longestColumn].Count);
         dummyVector.Set(rt.sizeDelta.x, newHeight);
         rt.sizeDelta = dummyVector;
     }

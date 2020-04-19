@@ -15,9 +15,13 @@ public class ContentItem : MonoBehaviour
     private TMP_InputField inputField;
     public TMP_InputField InputField { get => inputField; }
 
+    private int column;
+    private int row;
+
     public float Width {  get => RectTransform.sizeDelta.x; }
     public float Height { get => RectTransform.sizeDelta.y; }
-    
+    public int Column { get => column; set => column = value; }
+    public int Row { get => row; set => row = value; }
 
     public void SetActive(bool active)
     {

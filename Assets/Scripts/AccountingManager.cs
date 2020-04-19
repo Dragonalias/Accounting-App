@@ -15,10 +15,7 @@ public class AccountingManager : MonoBehaviour
     [SerializeField]
     private GameObject AddPeopleMenu;
 
-    private int column = 0;
-    private uint amountOfPeople = 0;
-
-    public ContentItem ContentItem { get => contentItem.GetComponent<ContentItem>(); }
+    private List<string> peopleAdded = new List<string>();
 
     private void Awake()
     {
@@ -27,44 +24,40 @@ public class AccountingManager : MonoBehaviour
     private void Start()
     {
         contentLogic.Init(this);
-        contentLogic.HeightChangedHandler += RowCountHandler;
-        AddColumn();
+        AddColumn(0);
+
+        for (int i = 1; i < 5; i++)
+        {
+            AddColumn(i);
+            AddRow(i);
+        }
     }
 
-    private void RowCountHandler(int rowCount)
+    public void AddColumn(int column)
     {
-        var rowCountAmount = contentLogic.ContentItems[0].Count;
-        if (rowCount > rowCountAmount)
-        {
-            AddRow(rowCount);
-        }
-        else if (rowCount < rowCountAmount)
-        {
-            RemoveContentItem(0, rowCountAmount);
-        }
+        InsertColumn(column);
+        InsertContentItem(CreateContentItem(TMPro.TMP_InputField.ContentType.IntegerNumber, column.ToString(), false), column, 0);
     }
-
     private void AddRow(int row)
     {
         InsertContentItem(CreateContentItem(TMPro.TMP_InputField.ContentType.IntegerNumber, row.ToString(), false), 0, row);
     }
-    public void AddColumn()
+    public void InsertColumn(int column)
     {
-        contentLogic.AddColumn();
+        contentLogic.InsertColumn(column);
     }
     private void RemoveColumn(int column)
     {
         contentLogic.RemoveColumn(column);
     }
-    private void InsertContentItem(ContentItem contentItem, int column, int row, string itemJsonData = null)
+    private void InsertContentItem(ContentItem contentItem, int column, int row)
     {
-        if (itemJsonData != null) contentItem.SetData(itemJsonData);
-
         contentLogic.InsertContentItem(contentItem, column, row);
     }
     private ContentItem CreateContentItem(TMPro.TMP_InputField.ContentType type, string text, bool interactible)
     {
         var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
+        contentItem.SetActive(true);
         contentItem.SetType(type);
         contentItem.SetText(text);
         contentItem.SetInteractable(interactible);
@@ -83,17 +76,27 @@ public class AccountingManager : MonoBehaviour
 
     public void AddPerson()
     {
-        amountOfPeople++;
-        AddColumn();
+        peopleAdded.Add("Person " + peopleAdded.Count);
+
+        var item = CreateContentItem(TMPro.TMP_InputField.ContentType.Name, "Person " + peopleAdded.Count, true);
+        item.InputField.onEndEdit.AddListener( delegate { UpdatePersonName(item.InputField.text); });
+        Debug.Log(peopleAdded.Count + " " + contentLogic.ContentItems[1].Count);
+        InsertContentItem(item, peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
     }
-    public void DeletePerson()
+    public void UpdatePersonName(string name)
     {
-        amountOfPeople--;
+        Debug.Log(name);
+    }
+    public void DeletePerson(int column)
+    {
+        RemoveColumn(column);
+        peopleAdded.RemoveAt(column - 1);
+        //Something more here to update all names
     }
 
     public void Save(string saveName)
     {
-        SaveObject saveobj = new SaveObject(contentLogic.ContentItems, amountOfPeople);
+        SaveObject saveobj = new SaveObject(contentLogic.ContentItems, peopleAdded);
         string json = JsonUtility.ToJson(saveobj);
         SaveSystem.Save(saveName + ".json", json);
         Debug.Log("SAving: " + json);
@@ -109,11 +112,11 @@ public class AccountingManager : MonoBehaviour
     }
     private void PopulateUI(SaveObject saveobj)
     {
-        this.amountOfPeople = saveobj.amountOfPeople;
+        this.peopleAdded = saveobj.peopleAdded;
 
         for (int i = 0; i < saveobj.columnRowAmount.Count; i++)
         {
-            AddColumn();
+            InsertColumn(i);
             for (int j = 0; j < saveobj.columnRowAmount[i]; j++)
             {
                 InsertContentItem(CreateContentItem(saveobj.contentItemData[j]), i, j);
@@ -127,28 +130,7 @@ public class AccountingManager : MonoBehaviour
         {
             Load("");
         }
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            column++;
-            Debug.Log(Time.deltaTime + " At column: " + column);
-        }
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            column--;
-            Debug.Log(Time.deltaTime + " At column: " + column);
-        }
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            RemoveColumn(column);
-            Debug.Log(Time.deltaTime + " REmoving column " + column);
-        }
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            AddColumn();
-            Debug.Log(Time.deltaTime + " Adding colomn!");
-        }
     }
-
 }
 
 [System.Serializable]
@@ -156,11 +138,11 @@ public class SaveObject
 {
     public List<int> columnRowAmount;
     public List<string> contentItemData;
-    public uint amountOfPeople;
+    public List<string> peopleAdded;
 
-    public SaveObject(List<Column> list, uint amountOfPeople)
+    public SaveObject(List<Column> list, List<string> peopleAdded)
     {
-        this.amountOfPeople = amountOfPeople;
+        this.peopleAdded = peopleAdded;
         columnRowAmount = new List<int>();
         contentItemData = new List<string>();
 
