@@ -52,6 +52,8 @@ public class AccountingManager : MonoBehaviour
     }
     private void InsertContentItem(ContentItem contentItem, int column, int row)
     {
+        
+        //if (row >= contentLogic.ContentItems[column].Count) AddRow(row);
         contentLogic.InsertContentItem(contentItem, column, row);
     }
     private ContentItem CreateContentItem(TMPro.TMP_InputField.ContentType type, string text, bool interactible)
@@ -80,7 +82,7 @@ public class AccountingManager : MonoBehaviour
 
         var item = CreateContentItem(TMPro.TMP_InputField.ContentType.Name, "Person " + peopleAdded.Count, true);
         item.InputField.onEndEdit.AddListener( delegate { UpdatePersonName(item.InputField.text); });
-        Debug.Log(peopleAdded.Count + " " + contentLogic.ContentItems[1].Count);
+        if (peopleAdded.Count >= contentLogic.ContentItems.Count) AddColumn(peopleAdded.Count);
         InsertContentItem(item, peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
     }
     public void UpdatePersonName(string name)
