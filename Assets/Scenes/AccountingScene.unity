@@ -693,7 +693,7 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 33.05
+  m_fontSize: 55
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -739,7 +739,7 @@ MonoBehaviour:
     spaceCount: 1
     wordCount: 2
     linkCount: 0
-    lineCount: 2
+    lineCount: 1
     pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
@@ -1321,7 +1321,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 50
   m_Viewport: {fileID: 2055940599}
   m_HorizontalScrollbar: {fileID: 1686363529}
   m_VerticalScrollbar: {fileID: 482551802}
@@ -1404,8 +1404,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -799.95, y: 281.82}
-  m_SizeDelta: {x: 135, y: 75}
+  m_AnchoredPosition: {x: -723.4995, y: 288.7}
+  m_SizeDelta: {x: 287.9, y: 88.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &694254595
 MonoBehaviour:
@@ -2775,10 +2775,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contentLogic: {fileID: 699006271}
-  contentItem: {fileID: 9063514762520589725, guid: af736b7d95f9baf4fbc3890c8e080a2d,
+  contentInputItem: {fileID: 9063514762520589725, guid: af736b7d95f9baf4fbc3890c8e080a2d,
     type: 3}
-  MainMenu: {fileID: 0}
-  AddPeopleMenu: {fileID: 0}
+  contentButtonItem: {fileID: 3411119548593272603, guid: f97ea40c2289ae24ba583a4686866180,
+    type: 3}
 --- !u!4 &1540970794
 Transform:
   m_ObjectHideFlags: 0

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PoolObject : MonoBehaviour
 {
-    static Stack<PoolObject> stack = new Stack<PoolObject>();
+    private Stack<PoolObject> stack = new Stack<PoolObject>();
 
     public PoolObject GetInstance(Transform parent)
     {

@@ -98,6 +98,14 @@ public class ContentLogic : MonoBehaviour
     public void InsertContentItem(ContentItem item, int column, int row)
     {
         ItemSizeCheck(item);
+        
+        if (row < ContentItems[column].Count) //Make space for the item
+        {
+            for (int i = row; i < ContentItems[column].Count; i++)
+            {
+                SetContentItemPos(ContentItems[column].GetContentItem(row), column, row + 1);
+            }
+        }
         SetContentItemPos(item, column, row);
         ContentItems[column].Insert(row, item);
 
@@ -124,26 +132,25 @@ public class ContentLogic : MonoBehaviour
         item.RectTransform.sizeDelta = dummyVector;
     }
 
-    public void RemoveContentItem(Vector2Int listPos)
+    public void RemoveContentItem(int column, int row)
     {
-        if (ContentItems[listPos.x].Count == 0)
+        if (ContentItems[column].Count == 0)
         {
             Debug.LogError("How did it get to this?");
             return;
         }
-
         //Move every item under it up
-        if(listPos.y < ContentItems[listPos.x].Count)
+        if (row < ContentItems[column].Count)
         {
-            for (int i = listPos.y +1; i < ContentItems[listPos.x].Count; i++)
+            for (int i = row + 1; i < ContentItems[column].Count; i++)
             {
-                SetContentItemPos(ContentItems[listPos.x].GetContentItem(i), listPos.x, i-1);
+                SetContentItemPos(ContentItems[column].GetContentItem(i), column, i-1);
             }
         }
-        ContentItems[listPos.x].GetContentItem(listPos.y).SetActive(false);
-        ContentItems[listPos.x].RemoveAt(listPos.y);
+        ContentItems[column].GetContentItem(row).SetActive(false);
+        ContentItems[column].RemoveAt(row);
 
-        ChangeHeightLogic(listPos.x);
+        ChangeHeightLogic(column);
     }
 
     private void SetContentItemPos(ContentItem item, int column, int row)
@@ -152,12 +159,6 @@ public class ContentLogic : MonoBehaviour
         item.RectTransform.anchoredPosition = dummyVector;
         item.Column = column;
         item.Row = row;
-
-        if (column == ContentItems.Count) return;
-        if(row < ContentItems[column].Count)
-        {
-            SetContentItemPos(ContentItems[column].GetContentItem(row), column, row + 1);
-        }
     }
 
     private float ColumnHeight(int column)

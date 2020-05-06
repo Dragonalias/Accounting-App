@@ -4,16 +4,11 @@ using System.Collections.Generic;
 
 public class AccountingManager : MonoBehaviour
 {
-    [SerializeField]
-    private ContentLogic contentLogic;
+    [SerializeField] private ContentLogic contentLogic;
 
-    [SerializeField]
-    private PoolObject contentItem;
+    [SerializeField] private PoolObject contentInputItem;
 
-    [SerializeField]
-    private GameObject MainMenu;
-    [SerializeField]
-    private GameObject AddPeopleMenu;
+    [SerializeField] private PoolObject contentButtonItem;
 
     private List<string> peopleAdded = new List<string>();
 
@@ -36,11 +31,11 @@ public class AccountingManager : MonoBehaviour
     public void AddColumn(int column)
     {
         InsertColumn(column);
-        InsertContentItem(CreateContentItem(TMPro.TMP_InputField.ContentType.IntegerNumber, column.ToString(), false), column, 0);
+        InsertContentItem(CreateContentItemInput(TMPro.TMP_InputField.ContentType.IntegerNumber, column.ToString(), false), column, 0);
     }
     private void AddRow(int row)
     {
-        InsertContentItem(CreateContentItem(TMPro.TMP_InputField.ContentType.IntegerNumber, row.ToString(), false), 0, row);
+        InsertContentItem(CreateContentItemInput(TMPro.TMP_InputField.ContentType.IntegerNumber, row.ToString(), false), 0, row);
     }
     public void InsertColumn(int column)
     {
@@ -52,38 +47,38 @@ public class AccountingManager : MonoBehaviour
     }
     private void InsertContentItem(ContentItem contentItem, int column, int row)
     {
-        
-        //if (row >= contentLogic.ContentItems[column].Count) AddRow(row);
         contentLogic.InsertContentItem(contentItem, column, row);
     }
-    private ContentItem CreateContentItem(TMPro.TMP_InputField.ContentType type, string text, bool interactible)
+    private ContentItemInputField CreateContentItemInput(TMPro.TMP_InputField.ContentType type, string text, bool interactible)
     {
-        var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
+        var contentItem = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
         contentItem.SetActive(true);
         contentItem.SetType(type);
         contentItem.SetText(text);
         contentItem.SetInteractable(interactible);
         return contentItem;
     }
-    private ContentItem CreateContentItem(string jsonData)
+    private ContentItemInputField CreateContentItem(string jsonData)
     {
-        var contentItem = this.contentItem.GetInstance(contentLogic.transform).GetComponent<ContentItem>();
+        var contentItem = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+        contentItem.SetActive(true);
         contentItem.SetData(jsonData);
         return contentItem;
     }
-    private void RemoveContentItem(int column, int row)
+    public void RemoveContentItem(int column, int row)
     {
-        contentLogic.RemoveContentItem(new Vector2Int(column, row));
+        contentLogic.RemoveContentItem(column, row);
     }
 
     public void AddPerson()
     {
         peopleAdded.Add("Person " + peopleAdded.Count);
 
-        var item = CreateContentItem(TMPro.TMP_InputField.ContentType.Name, "Person " + peopleAdded.Count, true);
+        var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.Name, "Person " + peopleAdded.Count, true);
         item.InputField.onEndEdit.AddListener( delegate { UpdatePersonName(item.InputField.text); });
         if (peopleAdded.Count >= contentLogic.ContentItems.Count) AddColumn(peopleAdded.Count);
         InsertContentItem(item, peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
+        AddRowButton(peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
     }
     public void UpdatePersonName(string name)
     {
@@ -95,6 +90,28 @@ public class AccountingManager : MonoBehaviour
         peopleAdded.RemoveAt(column - 1);
         //Something more here to update all names
     }
+
+    private void AddRowButton(int column, int row)
+    {
+        var item = contentButtonItem.GetInstance(contentLogic.transform).GetComponent<ContentItemButton>();
+        Debug.Log(item);
+        item.MakeClickable(this);
+        InsertContentItem(item, column, row);
+    }
+
+    public void AddFinance(int column, int row)
+    {
+        var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.DecimalNumber, "0", true);
+        item.InputField.onEndEdit.AddListener(delegate { UpdateFinance(item.InputField.text); });
+        item.MakeDeleteable(this);
+        if (row >= contentLogic.ContentItems[column].Count) AddRow(row);
+        InsertContentItem(item, column, row);
+    }
+    public void UpdateFinance(string number)
+    {
+        Debug.Log(number);
+    }
+    
 
     public void Save(string saveName)
     {
@@ -153,7 +170,7 @@ public class SaveObject
             columnRowAmount.Add(list[i].Count);
             for (int j = 0; j < list[i].Count; j++)
             {
-                contentItemData.Add(list[i].GetContentItem(j).GetData());
+                contentItemData.Add(list[i].GetContentItem(j).GetData()); //TODO: accomadate buttons
             }
         }
         
