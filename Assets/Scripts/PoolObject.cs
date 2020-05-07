@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/SpawnManagerScriptableObject", order = 1)]
 public class PoolObject : MonoBehaviour
 {
-    private Stack<PoolObject> stack = new Stack<PoolObject>();
+    public PoolStack stack;
 
     public PoolObject GetInstance(Transform parent)
     {
