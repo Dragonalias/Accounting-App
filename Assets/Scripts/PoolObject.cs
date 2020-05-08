@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/SpawnManagerScriptableObject", order = 1)]
 public class PoolObject : MonoBehaviour
 {
     public PoolStack stack;
@@ -18,8 +17,12 @@ public class PoolObject : MonoBehaviour
         return Instantiate(this, parent);
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         stack.Push(this);
+    }
+    private void OnDestroy()
+    {
+        stack.Clear();
     }
 }

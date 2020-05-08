@@ -94,7 +94,6 @@ public class AccountingManager : MonoBehaviour
     private void AddRowButton(int column, int row)
     {
         var item = contentButtonItem.GetInstance(contentLogic.transform).GetComponent<ContentItemButton>();
-        Debug.Log(item);
         item.MakeClickable(this);
         InsertContentItem(item, column, row);
     }
