@@ -21,10 +21,10 @@ public class ContentItemInputField : ContentItem
         base.SetActive(active);
     }
 
-    public void MakeDeleteable(AccountingManager manager)
+    public void MakeDeleteable(UnityAction<int, int> action)
     {
         deleteButton.gameObject.SetActive(true);
-        deleteButton.onClick.AddListener(()=>manager.RemoveContentItem(Column, Row));
+        deleteButton.onClick.AddListener(()=> action(Column, Row));
     }
     public override string GetData()
     {

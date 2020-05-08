@@ -77,6 +77,7 @@ public class AccountingManager : MonoBehaviour
         var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.Name, "Person " + peopleAdded.Count, true);
         item.InputField.onEndEdit.AddListener( delegate { UpdatePersonName(item.InputField.text); });
         if (peopleAdded.Count >= contentLogic.ContentItems.Count) AddColumn(peopleAdded.Count);
+        item.MakeDeleteable(DeletePerson);
         InsertContentItem(item, peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
         AddRowButton(peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
     }
@@ -84,7 +85,7 @@ public class AccountingManager : MonoBehaviour
     {
         Debug.Log(name);
     }
-    public void DeletePerson(int column)
+    public void DeletePerson(int column, int row)
     {
         RemoveColumn(column);
         peopleAdded.RemoveAt(column - 1);
@@ -94,7 +95,7 @@ public class AccountingManager : MonoBehaviour
     private void AddRowButton(int column, int row)
     {
         var item = contentButtonItem.GetInstance(contentLogic.transform).GetComponent<ContentItemButton>();
-        item.MakeClickable(this);
+        item.MakeClickable(AddFinance);
         InsertContentItem(item, column, row);
     }
 
@@ -102,7 +103,7 @@ public class AccountingManager : MonoBehaviour
     {
         var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.DecimalNumber, "0", true);
         item.InputField.onEndEdit.AddListener(delegate { UpdateFinance(item.InputField.text); });
-        item.MakeDeleteable(this);
+        item.MakeDeleteable(RemoveContentItem);
         if (row >= contentLogic.ContentItems[column].Count) AddRow(row);
         InsertContentItem(item, column, row);
     }

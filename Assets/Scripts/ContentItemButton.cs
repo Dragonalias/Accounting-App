@@ -12,9 +12,9 @@ public class ContentItemButton : ContentItem
     [SerializeField] private Button button;
     public Button Button { get => button; }
 
-    public void MakeClickable(AccountingManager manager)
+    public void MakeClickable(UnityAction<int, int> action)
     {
-        Button.onClick.AddListener(()=>manager.AddFinance(Column, Row));
+        Button.onClick.AddListener(()=>action(Column, Row));
     }
 
     public override string GetData()
