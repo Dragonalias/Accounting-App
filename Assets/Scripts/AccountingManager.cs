@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-
+using UnityEngine.UI;
 
 public class AccountingManager : MonoBehaviour
 {
     [SerializeField] private ContentLogic contentLogic;
+
+    [SerializeField] private ScrollRect MainScroll;
 
     [SerializeField] private PoolObject contentInputItem;
 
@@ -52,6 +54,7 @@ public class AccountingManager : MonoBehaviour
     private ContentItemInputField CreateContentItemInput(TMPro.TMP_InputField.ContentType type, string text, bool interactible)
     {
         var contentItem = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+        contentItem.GetComponent<FixScroll>().MainScroll = MainScroll;
         contentItem.SetActive(true);
         contentItem.SetType(type);
         contentItem.SetText(text);
