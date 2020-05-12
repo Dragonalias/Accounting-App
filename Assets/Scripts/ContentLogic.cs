@@ -6,16 +6,11 @@ using System.Linq;
 
 public class ContentLogic : MonoBehaviour
 {
-    [SerializeField]
-    private RectTransform rt;
-    [SerializeField]
-    private float paddingBetweenRows;
-    [SerializeField]
-    private float paddingBetweenColumns;
-    [SerializeField]
-    private float columnWidth = 345;
-    [SerializeField]
-    private float rowHeight = 150;
+    [SerializeField] private RectTransform rt;
+    [SerializeField] private float paddingBetweenRows;
+    [SerializeField] private float paddingBetweenColumns;
+    [SerializeField] private float columnWidth = 345;
+    [SerializeField] private float rowHeight = 150;
 
     private List<Column> contentItems;
     private int longestColumn = 0;
@@ -51,7 +46,6 @@ public class ContentLogic : MonoBehaviour
         ChangeWidth(RowWidth());
     }
 
-    //Todo: make
     public void RemoveColumn(int column)
     {
         RemoveEntireColumn(column);

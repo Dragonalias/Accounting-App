@@ -64,6 +64,7 @@ public class AccountingManager : MonoBehaviour
     private ContentItemInputField CreateContentItem(string jsonData)
     {
         var contentItem = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+        contentItem.GetComponent<FixScroll>().MainScroll = MainScroll;
         contentItem.SetActive(true);
         contentItem.SetData(jsonData);
         return contentItem;
@@ -108,7 +109,7 @@ public class AccountingManager : MonoBehaviour
         var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.DecimalNumber, "0", true);
         item.InputField.onEndEdit.AddListener(delegate { UpdateFinance(item.InputField.text); });
         item.MakeDeleteable(RemoveContentItem);
-        if (row >= contentLogic.ContentItems[column].Count) AddRow(row);
+        if (contentLogic.ContentItems[column].Count >= contentLogic.ContentItems[0].Count) AddRow(contentLogic.ContentItems[column].Count);
         InsertContentItem(item, column, row);
     }
     public void UpdateFinance(string number)
