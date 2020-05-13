@@ -152,7 +152,13 @@ public class AccountingManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            Load("");
+            for (int i = 0; i < contentLogic.ContentItems.Count; i++)
+            {
+                for (int j = 0; j < contentLogic.ContentItems[i].Count; j++)
+                {
+                    Debug.Log("column: "+ i + "row: " +j+ "type: "+ contentLogic.ContentItems[i].GetContentItem(j).GetContentType());
+                }
+            }
         }
     }
 }
