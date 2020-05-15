@@ -9,7 +9,7 @@ public class ContentItemButton : ContentItem
 {
     private ContentInputFieldSaveData saveData = null;
 
-    [SerializeField] private Button button;
+    [SerializeField] private Button button = null;
     public Button Button { get => button; }
 
     public void MakeClickable(UnityAction<int, int> action)
@@ -20,11 +20,6 @@ public class ContentItemButton : ContentItem
     public override string GetData()
     {
         return "";
-    }
-
-    public override void SetContentType()
-    {
-        contentType = ContentItemType.Button;
     }
     public override void ResetItem()
     {

@@ -33,12 +33,10 @@ public class ContentItemInputField : ContentItem
     public void SetType(TMP_InputField.ContentType type)
     {
         InputField.contentType = type;
-        saveData.type = type;
     }
     public void SetInteractable(bool activity)
     {
         InputField.interactable = activity;
-        saveData.isInteractable = activity;
     }
 
     public void SetText(string text)
@@ -54,8 +52,6 @@ public class ContentItemInputField : ContentItem
     public void SetData(ContentInputFieldSaveData data)
     {
         SetText(data.textData);
-        SetType(data.type);
-        SetInteractable(data.isInteractable);
     }
 
     public override void ResetItem()
@@ -65,27 +61,18 @@ public class ContentItemInputField : ContentItem
         deleteButton.onClick.RemoveAllListeners();
         deleteButton.gameObject.SetActive(false);
     }
-
-    public override void SetContentType()
-    {
-        contentType = ContentItemType.InputField;
-    }
 }
 
 public class ContentInputFieldSaveData
 {
     public string textData;
-    public TMP_InputField.ContentType type;
-    public bool isInteractable;
 
     public ContentInputFieldSaveData()
     {
 
     }
-    public ContentInputFieldSaveData(string textData, TMP_InputField.ContentType type, bool isInteractable)
+    public ContentInputFieldSaveData(string textData)
     {
         this.textData = textData;
-        this.type = type;
-        this.isInteractable = isInteractable;
     }
 }
