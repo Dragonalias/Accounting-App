@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System.IO;
+using System;
 
 public class AccountingManager : MonoBehaviour
 {
+    public enum Months { January, February, March, April, May, June, July, August, September, October, November, December }
+
     [SerializeField] private ContentLogic contentLogic;
+
+    [SerializeField] private InformationResult informationResult;
 
     [SerializeField] private ScrollRect mainScroll;
 
-    [SerializeField] private TMPro.TMP_Dropdown monthDropDown;
+    [SerializeField] private DropdownMonths monthDropDown;
 
     [SerializeField] private PoolObject contentInputItem;
 
@@ -24,15 +29,8 @@ public class AccountingManager : MonoBehaviour
     private void Start()
     {
         contentLogic.Init(this);
-        List<string> dropdownList = new List<string>();
-        dropdownList.AddRange(Directory.GetFiles(SaveSystem.SAVE_FOLDER, "*.json"));
-        for (int i = 0; i < dropdownList.Count; i++)
-        {
-            dropdownList[i] = dropdownList[i].Replace(".json", "");
-            dropdownList[i] = Path.GetFileName(dropdownList[i]);
-        }
-        monthDropDown.AddOptions(dropdownList);
-        monthDropDown.onValueChanged.AddListener(delegate { LoadMonth(monthDropDown.captionText.text); });
+        monthDropDown.Init(this);
+
         AddColumn(0);
         for (int i = 1; i < 5; i++)
         {
@@ -140,12 +138,14 @@ public class AccountingManager : MonoBehaviour
     }
     
 
-    public void SaveMonth(string monthAndYear)
+    public void SaveMonth(Months month, int year)
     {
         SaveObject saveobj = new SaveObject(contentLogic.ContentItems, peopleAdded);
         string json = JsonUtility.ToJson(saveobj);
-        SaveSystem.Save(monthAndYear + ".json", json);
-        Debug.Log("SAving: " + json);
+        string name = month.ToString("g") + year.ToString();
+        SaveSystem.Save(name + ".json", json);
+        monthDropDown.AddMonth(month, year, name);
+        Debug.Log("Saving: " + json);
     }
 
     public void LoadMonth(string monthAndYear)
@@ -195,7 +195,7 @@ public class AccountingManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.A))
         {
-            SaveMonth("April");
+            //SaveMonth("April");
         }
         if (Input.GetKeyDown(KeyCode.B))
         {
