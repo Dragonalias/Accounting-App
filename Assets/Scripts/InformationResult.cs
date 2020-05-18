@@ -1,18 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class InformationResult : MonoBehaviour
+public class InformationResult : MonoBehaviour, IPointerClickHandler
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public TMPro.TMP_Text people;
+    public TMPro.TMP_Text amount;
 
-    // Update is called once per frame
-    void Update()
+    public void OnPointerClick(PointerEventData eventData)
     {
-        
+        GUIUtility.systemCopyBuffer = amount.text;
+        Debug.Log("Text was copied!");
     }
 }

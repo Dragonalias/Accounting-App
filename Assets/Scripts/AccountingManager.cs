@@ -10,7 +10,7 @@ public class AccountingManager : MonoBehaviour
 
     [SerializeField] private ContentLogic contentLogic;
 
-    [SerializeField] private InformationResult informationResult;
+    [SerializeField] private InformationResultManager informationResultManager;
 
     [SerializeField] private ScrollRect mainScroll;
 
@@ -142,10 +142,12 @@ public class AccountingManager : MonoBehaviour
     {
         SaveObject saveobj = new SaveObject(contentLogic.ContentItems, peopleAdded);
         string json = JsonUtility.ToJson(saveobj);
-        string name = month.ToString("g") + year.ToString();
+        string name = string.Concat(year.ToString(), " ", month.ToString("g"));
         SaveSystem.Save(name + ".json", json);
-        monthDropDown.AddMonth(month, year, name);
-        Debug.Log("Saving: " + json);
+        if (!SaveSystem.SaveFileExists(name + ".json"))
+        {
+            monthDropDown.AddMonth(name); //Save does not yet exist. Addmonth
+        } 
     }
 
     public void LoadMonth(string monthAndYear)
@@ -153,9 +155,16 @@ public class AccountingManager : MonoBehaviour
         Debug.Log(monthAndYear);
         string loadedString = SaveSystem.Load(monthAndYear + ".json");
         Debug.Log("loaded: " +loadedString);
-        var loadedFile = JsonUtility.FromJson<SaveObject>(loadedString);
-
-        PopulateUI(loadedFile);
+        if (loadedString == null)
+        {
+            ClearUIExceptCounters();
+        }
+        else
+        {
+            var loadedFile = JsonUtility.FromJson<SaveObject>(loadedString);
+            PopulateUI(loadedFile);
+        }
+        
     }
     private void PopulateUI(SaveObject saveobj)
     {
@@ -180,6 +189,13 @@ public class AccountingManager : MonoBehaviour
         }
     }
 
+    public void Calculate()
+    {
+        Debug.Log("Calculating!");
+        float result = 2530;
+        informationResultManager.AddResult("person1", "person2", result);
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.DownArrow))
@@ -195,7 +211,7 @@ public class AccountingManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.A))
         {
-            //SaveMonth("April");
+            SaveMonth(Months.August, 2020);
         }
         if (Input.GetKeyDown(KeyCode.B))
         {
@@ -224,7 +240,6 @@ public class SaveObject
             for (int j = 1; j < list[i].Count; j++)
             {
                 ContentItem item = list[i].GetContentItem(j);
-                Debug.Log(item);
                 if (!item.Savable) continue;
                 contentItemData.Add(item.GetData());
                 columnRowAmount[i]++;

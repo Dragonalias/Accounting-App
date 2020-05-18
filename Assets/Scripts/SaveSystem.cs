@@ -13,6 +13,16 @@ public static class SaveSystem
         }
     }
 
+    public static bool SaveFileExists(string saveName)
+    {
+        string filePath = SAVE_FOLDER + saveName;
+        if (File.Exists(filePath))
+        {
+            return true;
+        }
+        return false;
+    }
+
     public static void Save(string saveName, string saveString)
     {
         string filePath = SAVE_FOLDER + saveName;
@@ -20,6 +30,7 @@ public static class SaveSystem
         {
             Debug.LogError("Overriding a save!");
         }
+        Debug.Log("Month saved to: " + filePath);
         File.WriteAllText(filePath, saveString);
     }
     public static string Load(string saveName)
