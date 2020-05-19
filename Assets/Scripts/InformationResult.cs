@@ -11,6 +11,6 @@ public class InformationResult : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData)
     {
         GUIUtility.systemCopyBuffer = amount.text;
-        Debug.Log("Text was copied!");
+        Debug.Log("Text was copied: " + amount.text);
     }
 }

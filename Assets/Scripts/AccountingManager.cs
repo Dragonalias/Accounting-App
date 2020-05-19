@@ -10,6 +10,8 @@ public class AccountingManager : MonoBehaviour
 
     [SerializeField] private ContentLogic contentLogic;
 
+    [SerializeField] private PopupSystem popupSystem;
+
     [SerializeField] private InformationResultManager informationResultManager;
 
     [SerializeField] private ScrollRect mainScroll;
@@ -37,6 +39,8 @@ public class AccountingManager : MonoBehaviour
             AddColumn(i);
             AddRow(i);
         }
+
+        popupSystem.PopupSaveMonth(delegate { Debug.Log("confirm!"); }, () => Debug.Log("cancel!"));
     }
 
     public void AddColumn(int column)
