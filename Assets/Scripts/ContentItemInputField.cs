@@ -8,7 +8,6 @@ using UnityEngine.Events;
 
 public class ContentItemInputField : ContentItem
 {
-    private ContentInputFieldSaveData saveData = null;
 
     [SerializeField] private Button deleteButton;
 
@@ -17,7 +16,6 @@ public class ContentItemInputField : ContentItem
 
     public override void SetActive(bool active)
     {
-        if(saveData == null) saveData = new ContentInputFieldSaveData();
         base.SetActive(active);
     }
 
@@ -28,7 +26,7 @@ public class ContentItemInputField : ContentItem
     }
     public override string GetData()
     {
-        return JsonUtility.ToJson(saveData);
+        return InputField.text;
     }
     public void SetType(TMP_InputField.ContentType type)
     {
@@ -42,16 +40,10 @@ public class ContentItemInputField : ContentItem
     public void SetText(string text)
     {
         InputField.text = text;
-        saveData.textData = text;
     }
     public void SetData(string data)
     {
-        var getData = JsonUtility.FromJson<ContentInputFieldSaveData>(data);
-        SetData(getData);
-    }
-    public void SetData(ContentInputFieldSaveData data)
-    {
-        SetText(data.textData);
+        InputField.text = data;
     }
 
     public override void ResetItem()
@@ -60,19 +52,5 @@ public class ContentItemInputField : ContentItem
         InputField.onEndEdit.RemoveAllListeners();
         deleteButton.onClick.RemoveAllListeners();
         deleteButton.gameObject.SetActive(false);
-    }
-}
-
-public class ContentInputFieldSaveData
-{
-    public string textData;
-
-    public ContentInputFieldSaveData()
-    {
-
-    }
-    public ContentInputFieldSaveData(string textData)
-    {
-        this.textData = textData;
     }
 }

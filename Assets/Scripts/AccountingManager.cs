@@ -32,6 +32,7 @@ public class AccountingManager : MonoBehaviour
     {
         contentLogic.Init(this);
         monthDropDown.Init(this);
+        popupSystem.Init(this);
 
         AddColumn(0);
         for (int i = 1; i < 5; i++)
@@ -40,7 +41,6 @@ public class AccountingManager : MonoBehaviour
             AddRow(i);
         }
 
-        popupSystem.PopupSaveMonth(delegate { Debug.Log("confirm!"); }, () => Debug.Log("cancel!"));
     }
 
     public void AddColumn(int column)
@@ -142,22 +142,22 @@ public class AccountingManager : MonoBehaviour
     }
     
 
-    public void SaveMonth(Months month, int year)
+    public void SaveMonth(string month, string year)
     {
         SaveObject saveobj = new SaveObject(contentLogic.ContentItems, peopleAdded);
         string json = JsonUtility.ToJson(saveobj);
-        string name = string.Concat(year.ToString(), " ", month.ToString("g"));
-        SaveSystem.Save(name + ".json", json);
-        if (!SaveSystem.SaveFileExists(name + ".json"))
+        string name = string.Concat(year, " ", month);
+        if (!SaveSystem.Save(name + ".json", json))//Save does not override anything, meaning that month must be added
         {
-            monthDropDown.AddMonth(name); //Save does not yet exist. Addmonth
-        } 
+            monthDropDown.AddMonth(name); 
+        }
+        monthDropDown.ShowMonth(name);
     }
 
-    public void LoadMonth(string monthAndYear)
+    public void LoadMonth(string yearAndMonth)
     {
-        Debug.Log(monthAndYear);
-        string loadedString = SaveSystem.Load(monthAndYear + ".json");
+        Debug.Log("loading: " +yearAndMonth);
+        string loadedString = SaveSystem.Load(yearAndMonth + ".json");
         Debug.Log("loaded: " +loadedString);
         if (loadedString == null)
         {
@@ -173,13 +173,14 @@ public class AccountingManager : MonoBehaviour
     private void PopulateUI(SaveObject saveobj)
     {
         ClearUIExceptCounters();
-
+        int contentCounter = 0;
         for (int i = 0; i < saveobj.peopleAdded.Count; i++)
         {
             AddPerson(saveobj.peopleAdded[i]);
             for (int j = 1; j <= saveobj.columnRowAmount[i+1]; j++)
             {
-                AddFinance(i+1, j +1, JsonUtility.FromJson<ContentInputFieldSaveData>(saveobj.contentItemData[j]).textData);
+                AddFinance(i+1, j +1, saveobj.contentItemData[contentCounter]);
+                contentCounter++;
             }
             
         }
@@ -215,7 +216,7 @@ public class AccountingManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.A))
         {
-            SaveMonth(Months.August, 2020);
+            SaveMonth("August", "2020");
         }
         if (Input.GetKeyDown(KeyCode.B))
         {
@@ -240,7 +241,7 @@ public class SaveObject
 
         for (int i = 1; i < list.Count; i++)
         {
-            columnRowAmount.Add(0);
+            columnRowAmount.Add(0); //because we aren't counting the rows and column counters. would be a waste since they are made automatically anyway
             for (int j = 1; j < list[i].Count; j++)
             {
                 ContentItem item = list[i].GetContentItem(j);

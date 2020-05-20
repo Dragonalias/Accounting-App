@@ -2,35 +2,52 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class PopupSystem : MonoBehaviour
 {
     [SerializeField] private PopupElement confirm = null;
-    [SerializeField] private PopupElement saveMonth = null;
+    [SerializeField] private PopupSaveMonth saveMonth = null;
 
+    [HideInInspector] public AccountingManager manager;
+
+    public void Init(AccountingManager manager)
+    {
+        this.manager = manager;
+        confirm.Init(this);
+        saveMonth.Init(this);
+    }
     private void Popup()
     {
         gameObject.SetActive(true);
     }
-    private void Popdown()
+    public void Popdown()
     {
         gameObject.SetActive(false);
         confirm.MischiefManaged();
         saveMonth.MischiefManaged();
     }
 
-    public void PopupConfirmation(UnityAction confirmationEvent, UnityAction CancelEvent)
+    private void PopupBase(PopupElement button, UnityAction confirmationEvent = null, UnityAction cancelEvent = null)
     {
         Popup();
-        confirm.Init();
-        confirm.confirmButton.onClick.AddListener(confirmationEvent);
-        confirm.cancelButton.onClick.AddListener(CancelEvent);
+        button.gameObject.SetActive(true);
+        if (confirmationEvent != null)
+        {
+            button.confirmButton.onClick.AddListener(confirmationEvent);
+        }
+        if (cancelEvent != null)
+        {
+            button.cancelButton.onClick.AddListener(cancelEvent);
+        }
     }
-    public void PopupSaveMonth(UnityAction confirmationEvent, UnityAction CancelEvent)
+
+    public void PopupConfirmation(UnityAction confirmationEvent, UnityAction cancelEvent = null)
     {
-        Popup();
-        saveMonth.Init();
-        saveMonth.confirmButton.onClick.AddListener(confirmationEvent);
-        saveMonth.cancelButton.onClick.AddListener(CancelEvent);
+        PopupBase(confirm, confirmationEvent, cancelEvent);
+    }
+    public void PopupSaveMonth()
+    {
+        PopupBase(saveMonth);
     }
 }

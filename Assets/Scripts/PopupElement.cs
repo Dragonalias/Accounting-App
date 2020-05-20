@@ -8,9 +8,10 @@ public class PopupElement : MonoBehaviour
     public Button confirmButton;
     public Button cancelButton;
 
-    public virtual void Init()
+    public virtual void Init(PopupSystem popupSystem)
     {
-        gameObject.SetActive(true);
+        confirmButton.onClick.AddListener(popupSystem.Popdown);
+        cancelButton.onClick.AddListener(popupSystem.Popdown);
     }
 
     public virtual void MischiefManaged()

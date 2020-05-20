@@ -7,8 +7,6 @@ using UnityEngine.Events;
 
 public class ContentItemButton : ContentItem
 {
-    private ContentInputFieldSaveData saveData = null;
-
     [SerializeField] private Button button = null;
     public Button Button { get => button; }
 

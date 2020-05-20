@@ -26,8 +26,12 @@ public class DropdownMonths : MonoBehaviour
             dropdownList[i] = Path.GetFileName(dropdownList[i]);
         }
 
-        dropDownSortedList = SortDropdown(dropdownList);
-        dropdown.AddOptions(dropDownSortedList);
+        dropdown.AddOptions(SortDropdown(dropdownList));
+    }
+
+    public void ShowMonth(string name)
+    {
+        dropdown.value = dropDownSortedList.IndexOf(name) +1; //add one because 'New Month' is the first in dropdown, doesn't exist in dropDownSortedList
     }
 
     public void AddMonth(string name)
@@ -53,6 +57,7 @@ public class DropdownMonths : MonoBehaviour
             .Select(x => x.Name)
             .ToList();
 
+        dropDownSortedList = sortedList;
         return sortedList;
     }
 }
