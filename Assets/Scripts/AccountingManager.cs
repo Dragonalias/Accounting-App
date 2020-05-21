@@ -74,14 +74,7 @@ public class AccountingManager : MonoBehaviour
         contentItem.SetInteractable(interactible);
         return contentItem;
     }
-    private ContentItemInputField CreateContentItem(string jsonData)
-    {
-        var contentItem = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
-        contentItem.GetComponent<FixScroll>().MainScroll = mainScroll;
-        contentItem.SetActive(true);
-        contentItem.SetData(jsonData);
-        return contentItem;
-    }
+
     public void RemoveContentItem(int column, int row)
     {
         contentLogic.RemoveContentItem(column, row);
@@ -105,7 +98,6 @@ public class AccountingManager : MonoBehaviour
     }
     public void UpdatePersonName(string name)
     {
-        Debug.Log(name);
     }
     public void DeletePerson(int column, int row)
     {
@@ -138,7 +130,6 @@ public class AccountingManager : MonoBehaviour
     }
     public void UpdateFinance(string number)
     {
-        Debug.Log(number);
     }
     
 
@@ -152,6 +143,25 @@ public class AccountingManager : MonoBehaviour
             monthDropDown.AddMonth(name); 
         }
         monthDropDown.ShowMonth(name);
+    }
+
+    public void SaveMonthOnClick()
+    {
+        if (monthDropDown.IndexValue == 0)
+        {
+            popupSystem.PopupSaveMonth();
+        }
+        else
+        {
+            popupSystem.PopupConfirmation
+            ("you want to override save?",
+            () =>
+            {
+                var seperatedYearAndMonth = monthDropDown.DropdownCurrentText.Split(' ');
+                SaveMonth(seperatedYearAndMonth[1], seperatedYearAndMonth[0]);
+            });
+        }
+        
     }
 
     public void LoadMonth(string yearAndMonth)
@@ -170,6 +180,23 @@ public class AccountingManager : MonoBehaviour
         }
         
     }
+    public void DeleteMonth(string yearAndMonth)
+    {
+        SaveSystem.DeleteSave(yearAndMonth + ".json");
+        ClearUIExceptCounters();
+    }
+    public void DeleteCurrentMonth()
+    {
+        popupSystem.PopupConfirmation
+            ("you want to delete month?",
+            ()=>
+            {
+                DeleteMonth(monthDropDown.DropdownCurrentText);
+                monthDropDown.DeleteCurrentMonth();
+            });
+        
+    }
+
     private void PopulateUI(SaveObject saveobj)
     {
         ClearUIExceptCounters();

@@ -12,17 +12,22 @@ public class PopupSaveMonth : PopupElement
     {
         base.Init(popupSystem);
 
-        populateMonths();
-        populateYears();
+        PopulateMonths();
+        PopulateYears();
         PrepareEvents(popupSystem);
     }
 
-    private void populateMonths()
+    public override void MischiefManaged()
+    {
+        gameObject.SetActive(false);
+    }
+
+    private void PopulateMonths()
     {
         var list = Enum.GetValues(typeof(AccountingManager.Months)).Cast<AccountingManager.Months>().Select(x => x.ToString("g")).ToList();
         dropdownMonths.AddOptions(list);
     }
-    private void populateYears()
+    private void PopulateYears()
     {
         int earliestYear = 2010;
         var list = Enumerable.Range(earliestYear, DateTime.Today.Year - earliestYear+1).OrderByDescending(x => x).Select(x => x.ToString()).ToList();

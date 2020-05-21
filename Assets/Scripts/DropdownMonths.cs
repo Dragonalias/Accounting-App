@@ -8,25 +8,26 @@ using UnityEngine;
 
 public class DropdownMonths : MonoBehaviour
 {
-    [SerializeField] TMPro.TMP_Dropdown dropdown = null;
+    [SerializeField] private TMPro.TMP_Dropdown dropdown = null;
     private List<string> dropDownSortedList;
     private AccountingManager manager;
 
+    public string DropdownCurrentText => dropdown.captionText.text;
+    public int IndexValue => dropdown.value;
     public void Init(AccountingManager manager)
     {
         this.manager = manager;
-        ClearOptions();
+        
         dropdown.onValueChanged.AddListener(delegate { manager.LoadMonth(dropdown.captionText.text); });
 
-        List<string> dropdownList = new List<string>();
-        dropdownList.AddRange(Directory.GetFiles(SaveSystem.SAVE_FOLDER, "*.json"));
-        for (int i = 0; i < dropdownList.Count; i++)
+        dropDownSortedList = new List<string>();
+        dropDownSortedList.AddRange(Directory.GetFiles(SaveSystem.SAVE_FOLDER, "*.json"));
+        for (int i = 0; i < dropDownSortedList.Count; i++)
         {
-            dropdownList[i] = dropdownList[i].Replace(".json", "");
-            dropdownList[i] = Path.GetFileName(dropdownList[i]);
+            dropDownSortedList[i] = dropDownSortedList[i].Replace(".json", "");
+            dropDownSortedList[i] = Path.GetFileName(dropDownSortedList[i]);
         }
-
-        dropdown.AddOptions(SortDropdown(dropdownList));
+        ResetDropdown();
     }
 
     public void ShowMonth(string name)
@@ -37,6 +38,17 @@ public class DropdownMonths : MonoBehaviour
     public void AddMonth(string name)
     {
         dropDownSortedList.Add(name);
+        ResetDropdown();
+    }
+    public void DeleteCurrentMonth()
+    {
+        dropDownSortedList.Remove(dropdown.captionText.text);
+        ResetDropdown();
+        dropdown.SetValueWithoutNotify(0);
+    }
+
+    private void ResetDropdown()
+    {
         ClearOptions();
         dropdown.AddOptions(SortDropdown(dropDownSortedList));
     }

@@ -36,4 +36,15 @@ public static class SaveSystem
         }
         return File.ReadAllText(filePath);
     }
+    public static bool DeleteSave(string saveName)
+    {
+        string filePath = SAVE_FOLDER + saveName;
+        if (!File.Exists(filePath))
+        {
+            Debug.Log("No file to delete!");
+            return false;
+        }
+        File.Delete(filePath);
+        return true;
+    }
 }

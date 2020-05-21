@@ -42,9 +42,10 @@ public class PopupSystem : MonoBehaviour
         }
     }
 
-    public void PopupConfirmation(UnityAction confirmationEvent, UnityAction cancelEvent = null)
+    public void PopupConfirmation(string aboutText, UnityAction confirmationEvent, UnityAction cancelEvent = null)
     {
         PopupBase(confirm, confirmationEvent, cancelEvent);
+        confirm.aboutText.text = aboutText;
     }
     public void PopupSaveMonth()
     {
