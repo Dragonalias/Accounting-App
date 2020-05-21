@@ -3,14 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class InformationResult : MonoBehaviour, IPointerClickHandler
+public class InformationResult : MonoBehaviour
 {
     public TMPro.TMP_Text people;
-    public TMPro.TMP_Text amount;
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        GUIUtility.systemCopyBuffer = amount.text;
-        Debug.Log("Text was copied: " + amount.text);
-    }
+    public TMPro.TMP_InputField amount;
 }

@@ -241,14 +241,14 @@ public class AccountingManager : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            SaveMonth("August", "2020");
-        }
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            ClearUIExceptCounters();
-        }
+        //if (Input.GetKeyDown(KeyCode.A))
+        //{
+        //    SaveMonth("August", "2020");
+        //}
+        //if (Input.GetKeyDown(KeyCode.B))
+        //{
+        //    ClearUIExceptCounters();
+        //}
     }
 }
 
