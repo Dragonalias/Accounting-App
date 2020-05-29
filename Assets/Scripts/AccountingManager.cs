@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.IO;
 using System;
+using System.Linq;
+using TMPro;
 
 public class AccountingManager : MonoBehaviour
 {
@@ -21,6 +23,8 @@ public class AccountingManager : MonoBehaviour
     [SerializeField] private PoolObject contentInputItem;
 
     [SerializeField] private PoolObject contentButtonItem;
+
+    [SerializeField] private TMP_InputValidator customValidateDoubleWithComma;
 
     private List<string> peopleAdded = new List<string>();
 
@@ -46,11 +50,15 @@ public class AccountingManager : MonoBehaviour
     public void AddColumn(int column)
     {
         InsertColumn(column);
-        InsertContentItem(CreateContentItemInput(TMPro.TMP_InputField.ContentType.IntegerNumber, column.ToString(), false), column, 0);
+        var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.IntegerNumber, column.ToString(), false);
+        item.Savable = false;
+        InsertContentItem(item, column, 0);
     }
     private void AddRow(int row)
     {
-        InsertContentItem(CreateContentItemInput(TMPro.TMP_InputField.ContentType.IntegerNumber, row.ToString(), false), 0, row);
+        var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.IntegerNumber, row.ToString(), false);
+        item.Savable = false;
+        InsertContentItem(item, 0, row);
     }
     public void InsertColumn(int column)
     {
@@ -75,11 +83,12 @@ public class AccountingManager : MonoBehaviour
         return contentItem;
     }
 
-    public void RemoveContentItem(int column, int row)
+    public void RemoveContentItem(ContentItem item)
     {
-        contentLogic.RemoveContentItem(column, row);
+        contentLogic.RemoveContentItem(item.Column, item.Row);
     }
 
+    //PersonCode start
     public void AddPerson()
     {
         AddPerson("Person " + peopleAdded.Count);
@@ -88,21 +97,23 @@ public class AccountingManager : MonoBehaviour
     {
         peopleAdded.Add(name);
 
-        var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.Name, name, true);
+        var item = CreateContentItemInput(TMP_InputField.ContentType.Standard, name, true);
         item.Savable = false;
-        item.InputField.onEndEdit.AddListener(delegate { UpdatePersonName(item.InputField.text); });
+        item.InputField.onEndEdit.AddListener(delegate { UpdatePersonName(item); });
         if (peopleAdded.Count >= contentLogic.ContentItems.Count) AddColumn(peopleAdded.Count);
         item.MakeDeleteable(DeletePerson);
         InsertContentItem(item, peopleAdded.Count, 1);
         AddRowButton(peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
+        AddCalculationResultButton(peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
+        //contentLogic.CalculateBarPositions(item);
     }
-    public void UpdatePersonName(string name)
+    public void UpdatePersonName(ContentItem item)
     {
     }
-    public void DeletePerson(int column, int row)
+    public void DeletePerson(ContentItem item)
     {
-        RemoveColumn(column);
-        peopleAdded.RemoveAt(column - 1);
+        RemoveColumn(item.Column);
+        peopleAdded.RemoveAt(item.Column - 1);
         //Something more here to update all names
     }
 
@@ -114,22 +125,55 @@ public class AccountingManager : MonoBehaviour
         item.MakeClickable(AddFinance);
         InsertContentItem(item, column, row);
     }
+    private void AddCalculationResultButton(int column, int row)
+    {
+        var item = CreateContentItemInput(TMP_InputField.ContentType.DecimalNumber, "0", true);
+        item.InputField.readOnly = true;
+        item.InputField.image.color += Color.blue;
+        item.Savable = false;
+        item.SetActive(true);
 
+        InsertContentItem(item, column, row);
+    }
+    //PersonCode end
     public void AddFinance(int column, int row)
     {
         AddFinance(column, row, "0");
     }
     public void AddFinance(int column, int row, string text)
     {
-        var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.DecimalNumber, text, true);
+        var item = CreateContentItemInput(TMP_InputField.ContentType.Custom, text, true);
         item.Savable = true;
-        item.InputField.onEndEdit.AddListener(delegate { UpdateFinance(item.InputField.text); });
-        item.MakeDeleteable(RemoveContentItem);
+        item.InputField.onValidateInput = delegate (string input, int charIndex, char addedChar) { return FinanceValidation(addedChar); };
+        item.InputField.onEndEdit.AddListener((x)=>UpdateFinance(item));
+        item.MakeDeleteable((x)=> { RemoveContentItem(x); UpdateFinance(x);  });
         if (contentLogic.ContentItems[column].Count >= contentLogic.ContentItems[0].Count) AddRow(contentLogic.ContentItems[column].Count);
         InsertContentItem(item, column, row);
+        //contentLogic.CalculateBarPositions(item);
     }
-    public void UpdateFinance(string number)
+    private char FinanceValidation(char charToValidate)
     {
+        if (!char.IsNumber(charToValidate) && charToValidate != ',')
+        {
+            // ... if it is change it to an empty character.
+            charToValidate = '\0';
+        }
+        return charToValidate;
+    }
+    public void UpdateFinance(ContentItemInputField item)
+    {
+        double fallback = 0;
+        if (!double.TryParse(item.GetData(), out fallback))
+        {
+            item.SetText("0");
+        }
+        CalculateAndSetFinance(item.Column);
+    }
+    private void CalculateAndSetFinance(int column)
+    {
+        double result = contentLogic.ContentItems[column].contentItems.Where(x => x.Savable).Sum(x => double.Parse(x.GetData()));
+        ContentItemInputField calcItem = (ContentItemInputField)contentLogic.ContentItems[column].GetLastContentItem();
+        calcItem.SetText(result.ToString());
     }
     
 
@@ -209,7 +253,7 @@ public class AccountingManager : MonoBehaviour
                 AddFinance(i+1, j +1, saveobj.contentItemData[contentCounter]);
                 contentCounter++;
             }
-            
+            CalculateAndSetFinance(i + 1);
         }
     }
     private void ClearUIExceptCounters()
@@ -223,7 +267,6 @@ public class AccountingManager : MonoBehaviour
 
     public void Calculate()
     {
-        Debug.Log("Calculating!");
         float result = 2530;
         informationResultManager.AddResult("person1", "person2", result);
     }

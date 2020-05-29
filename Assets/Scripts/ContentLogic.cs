@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.UI;
 
 public class ContentLogic : MonoBehaviour
 {
-    [SerializeField] private RectTransform rt;
+    [SerializeField] private RectTransform thisRT;
+    [SerializeField] private ScrollRect scrollRect;
     [SerializeField] private float paddingBetweenRows;
     [SerializeField] private float paddingBetweenColumns;
     [SerializeField] private float columnWidth = 345;
@@ -30,8 +32,18 @@ public class ContentLogic : MonoBehaviour
 
         oneColumnWidth = columnWidth + paddingBetweenColumns;
         oneRowHeight = rowHeight + paddingBetweenRows;
+
+        //StartCoroutine("GiveScrollEventAfterOneFrame");
+        
     }
 
+    private IEnumerator GiveScrollEventAfterOneFrame()
+    {
+        yield return 0;
+        //Value changes once at beginning of frame, so i made this workaround
+        scrollRect.horizontalScrollbar.onValueChanged.AddListener((x) => AlwaysShowRowCount(x));
+        scrollRect.verticalScrollbar.onValueChanged.AddListener((x) => AlwaysShowColumnCountAndPeopleNames(x));
+    }
     public void InsertColumn(int column)
     {
         if (column != ContentItems.Count)
@@ -95,7 +107,8 @@ public class ContentLogic : MonoBehaviour
         {
             for (int i = row; i < ContentItems[column].Count; i++)
             {
-                SetContentItemPos(ContentItems[column].GetContentItem(row), column, row + 1);
+                ContentItem underlayingItem = ContentItems[column].GetContentItem(i);
+                SetContentItemPos(underlayingItem, column, underlayingItem.Row+1);
             }
         }
         SetContentItemPos(item, column, row);
@@ -122,6 +135,58 @@ public class ContentLogic : MonoBehaviour
             dummyVector.y = rowHeight;
         }
         item.RectTransform.sizeDelta = dummyVector;
+    }
+
+    //Todo: finish some day
+    public void CalculateBarPositions(ContentItem item)
+    {
+        dummyVector.Set((item.RectTransform.anchoredPosition.x - scrollRect.viewport.rect.width/2) *-1, (item.RectTransform.anchoredPosition.y) *-1);
+        Debug.Log(dummyVector);
+        thisRT.anchoredPosition = dummyVector;
+        //https://stackoverflow.com/questions/30766020/how-to-scroll-to-a-specific-element-in-scrollrect-with-unity-ui
+        //if (scrollRect.horizontalScrollbar.isActiveAndEnabled)
+        //{
+        //    float pos = item.RectTransform.anchoredPosition.x;
+        //    float horizontalPos = Mathf.Clamp(pos / thisRT.sizeDelta.x, 0, 1);
+        //    float newPos = pos + (scrollRect.viewport.rect.width * horizontalPos - scrollRect.viewport.rect.width * 0.5f);
+        //    float newhorizontalPos = Mathf.Clamp(newPos / thisRT.sizeDelta.x, 0, 1);
+        //    Debug.Log(string.Concat(" pos: ", pos, " horPos: ", horizontalPos, " newPos: ", newPos, " newhorpos: ", newhorizontalPos));
+        //    scrollRect.horizontalScrollbar.value = newhorizontalPos;
+        //}
+        //if (scrollRect.verticalScrollbar.isActiveAndEnabled)
+        //{
+        //    float pos = ColumnHeight(item.Column);
+        //    float verticalPos = Mathf.Clamp( pos / thisRT.sizeDelta.y, 0, 1);
+        //    float newPos = pos + (scrollRect.viewport.rect.height * verticalPos - scrollRect.viewport.rect.height * 0.5f);
+        //    float newverticalPos = Mathf.Clamp(newPos / thisRT.sizeDelta.x, 0, 1);
+
+        //    scrollRect.verticalScrollbar.value = 1 - newverticalPos;
+        //}
+    }
+    private void AlwaysShowRowCount(float barPos)
+    {
+        float clampedBarPos = Mathf.Clamp(barPos, 0, 1);
+        for (int i = 1; i < contentItems[0].Count; i++)
+        {
+            dummyVector.Set((thisRT.sizeDelta.x * clampedBarPos) - scrollRect.viewport.rect.width * clampedBarPos, contentItems[0].GetContentItem(i).RectTransform.anchoredPosition.y);
+            if (dummyVector.x < 0) dummyVector.x = 0;
+            contentItems[0].GetContentItem(i).RectTransform.anchoredPosition = dummyVector;
+        }
+    }
+    private void AlwaysShowColumnCountAndPeopleNames(float barPos)
+    {
+        float clampedBarPos = 1 - Mathf.Clamp(barPos, 0, 1);
+        for (int i = 1; i < contentItems.Count; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                if (contentItems[i].GetContentItem(j) == null) break;
+                float y = (oneRowHeight * j + (thisRT.sizeDelta.y * clampedBarPos) - scrollRect.viewport.rect.height * clampedBarPos) * -1;
+                dummyVector.Set(contentItems[i].GetContentItem(j).RectTransform.anchoredPosition.x, y);
+                if (dummyVector.y > 0) dummyVector.y = 0;
+                contentItems[i].GetContentItem(j).RectTransform.anchoredPosition = dummyVector;
+            }
+        }
     }
 
     public void RemoveContentItem(int column, int row)
@@ -199,18 +264,18 @@ public class ContentLogic : MonoBehaviour
     }
     private void ChangeHeight(float newHeight)
     {
-        dummyVector.Set(rt.sizeDelta.x, newHeight);
-        rt.sizeDelta = dummyVector;
+        dummyVector.Set(thisRT.sizeDelta.x, newHeight);
+        thisRT.sizeDelta = dummyVector;
     }
     private void ChangeWidth(float newWidth)
     {
-        dummyVector.Set(newWidth, rt.sizeDelta.y);
-        rt.sizeDelta = dummyVector;
+        dummyVector.Set(newWidth, thisRT.sizeDelta.y);
+        thisRT.sizeDelta = dummyVector;
     }
     private void ChangeHeightWidth(float newWidth, float newHeight)
     {
         dummyVector.Set(newWidth, newHeight);
-        rt.sizeDelta = dummyVector;
+        thisRT.sizeDelta = dummyVector;
     }
 }
 
@@ -222,7 +287,7 @@ public class Column
     public int Count { get => contentItems.Count; }
     public void Add(ContentItem item)
     {
-        contentItems.Add(item); 
+        contentItems.Add(item);
     }
     public void AddRange(IEnumerable<ContentItem> range)
     {
@@ -243,7 +308,12 @@ public class Column
 
     public ContentItem GetContentItem(int index)
     {
+        if (index >= contentItems.Count) return null;
         return contentItems[index];
+    }
+    public ContentItem GetLastContentItem()
+    {
+        return contentItems[contentItems.Count-1];
     }
 
     public IEnumerable<ContentItem> ReturnRange(int skip, int take)
@@ -252,3 +322,5 @@ public class Column
     }
 
 }
+
+

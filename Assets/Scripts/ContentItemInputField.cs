@@ -19,10 +19,10 @@ public class ContentItemInputField : ContentItem
         base.SetActive(active);
     }
 
-    public void MakeDeleteable(UnityAction<int, int> action)
+    public void MakeDeleteable(UnityAction<ContentItemInputField> action)
     {
         deleteButton.gameObject.SetActive(true);
-        deleteButton.onClick.AddListener(()=> action(Column, Row));
+        deleteButton.onClick.AddListener(()=> action(this));
     }
     public override string GetData()
     {
@@ -50,6 +50,8 @@ public class ContentItemInputField : ContentItem
     {
         base.ResetItem();
         InputField.onEndEdit.RemoveAllListeners();
+        InputField.readOnly = false;
+        InputField.onValidateInput = null;
         deleteButton.onClick.RemoveAllListeners();
         deleteButton.gameObject.SetActive(false);
     }
