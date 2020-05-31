@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class Log : MonoBehaviour
 {
-    [SerializeField] private Color textColor;
+    [SerializeField] private LogItem log;
     private void OnEnable()
     {
         Application.logMessageReceived += HandleLog;
@@ -18,29 +18,16 @@ public class Log : MonoBehaviour
 
     private void HandleLog(string logString, string stackTrace, LogType type)
     {
-        GameObject newLog = new GameObject("myTextGO");
-        newLog.transform.SetParent(transform);
-        var myText = CreateTextComponent(newLog);
+        var newLog = Instantiate(log, transform);
         
 
         if (type == LogType.Exception)
         {
-            myText.text = stackTrace;
+            newLog.SetText(stackTrace);
         }
         else
         {
-            myText.text = logString;
+            newLog.SetText(logString);
         }
-        newLog.GetComponent<RectTransform>().sizeDelta = new Vector2(0, myText.preferredHeight);
-    }
-
-    private TMPro.TextMeshProUGUI CreateTextComponent(GameObject canvasGameObject)
-    {
-        var myText = canvasGameObject.AddComponent<TMPro.TextMeshProUGUI>();
-        myText.color = textColor;
-        myText.enableAutoSizing = true;
-        myText.fontSizeMax = 30;
-
-        return myText;
     }
 }
