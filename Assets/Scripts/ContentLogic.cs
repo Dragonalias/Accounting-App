@@ -91,31 +91,45 @@ public class ContentLogic : MonoBehaviour
         
         ContentItems[targetColumn].AddRange(ContentItems[columnToBeMoved].ReturnRange(1, ContentItems[columnToBeMoved].Count -1));
         
-        for (int i = 1; i < ContentItems[columnToBeMoved].Count; i++)
-        {
-            SetContentItemPos(ContentItems[columnToBeMoved].GetContentItem(i), targetColumn, i);
-        }
+        SetContentItemParentPos(ContentItems[columnToBeMoved].GetContentItem(1), targetColumn, 1);
+        
 
         ContentItems[columnToBeMoved].RemoveRange(1, ContentItems[columnToBeMoved].Count - 1);
     }
 
-    public void InsertContentItem(ContentItem item, int column, int row)
+    public void InsertContentItemBase(ContentItem item, int column, int row)
     {
         ItemSizeCheck(item);
-        
+        ContentItems[column].Insert(row, item);
+        ChangeHeightLogic(column);
+    }
+    public void InsertContentParentItem(ContentItem item, int column, int row)
+    {
+        SetContentItemParentPos(item, column, row);
+        InsertContentItemBase(item, column, row);
+    }
+    public void InsertContentCountItem(ContentItem item, int column, int row)
+    {
+        SetContentItemParentPos(item, column, row);
+        InsertContentItemBase(item, column, row);
+    }
+    public void InsertContentChildItem(ContentItem item, int column, int row)
+    {
         if (row < ContentItems[column].Count) //Make space for the item
         {
             for (int i = row; i < ContentItems[column].Count; i++)
             {
                 ContentItem underlayingItem = ContentItems[column].GetContentItem(i);
-                SetContentItemPos(underlayingItem, column, underlayingItem.Row+1);
+                SetContentItemChildPos(underlayingItem, underlayingItem.Row+1);
             }
         }
-        SetContentItemPos(item, column, row);
-        ContentItems[column].Insert(row, item);
-
-        ChangeHeightLogic(column);
+        ContentItem parent = ContentItems[column].GetContentItem(1);
+        item.Parent = parent;
+        item.transform.SetParent(parent.transform);
+        SetContentItemChildPos(item, row);
+        InsertContentItemBase(item, column, row);
     }
+    
 
     private void ItemSizeCheck(ContentItem item)
     {
@@ -201,7 +215,7 @@ public class ContentLogic : MonoBehaviour
         {
             for (int i = row + 1; i < ContentItems[column].Count; i++)
             {
-                SetContentItemPos(ContentItems[column].GetContentItem(i), column, i-1);
+                SetContentItemChildPos(ContentItems[column].GetContentItem(i), i-1);
             }
         }
         ContentItems[column].GetContentItem(row).SetActive(false);
@@ -210,11 +224,17 @@ public class ContentLogic : MonoBehaviour
         ChangeHeightLogic(column);
     }
 
-    private void SetContentItemPos(ContentItem item, int column, int row)
+    private void SetContentItemParentPos(ContentItem item, int column, int row)
     {
         dummyVector.Set(oneColumnWidth * column, (oneRowHeight * row) * -1); //down is negative, so gotta flip
         item.RectTransform.anchoredPosition = dummyVector;
         item.Column = column;
+        item.Row = row;
+    }
+    private void SetContentItemChildPos(ContentItem item, int row)
+    {
+        dummyVector.Set(0, (oneRowHeight * (row-1)) * -1); //Row-1 because it is parented
+        item.RectTransform.anchoredPosition = dummyVector;
         item.Row = row;
     }
 
@@ -282,7 +302,7 @@ public class ContentLogic : MonoBehaviour
 public class Column
 {
     public float columnHeight = 0;
-    public List<ContentItem> interpayContentItems = new List<ContentItem>();
+    public bool isUsed = false;
     public List<ContentItem> contentItems = new List<ContentItem>();
 
     public int Count { get => contentItems.Count; }

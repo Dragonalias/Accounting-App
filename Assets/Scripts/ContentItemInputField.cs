@@ -8,10 +8,13 @@ using UnityEngine.Events;
 
 public class ContentItemInputField : ContentItem
 {
+    [SerializeField] private Color defaultColor;
 
-    [SerializeField] private Button deleteButton;
+    [SerializeField] private Color calculationColor;
 
-    [SerializeField] private TMP_InputField inputField;
+    [SerializeField] private Button deleteButton = null;
+
+    [SerializeField] private TMP_InputField inputField = null;
     public TMP_InputField InputField { get => inputField; }
 
     public override void SetActive(bool active)
@@ -46,9 +49,20 @@ public class ContentItemInputField : ContentItem
         InputField.text = data;
     }
 
+    public void SetDefaultColor()
+    {
+        InputField.image.color = defaultColor;
+    }
+    public void SetCalculationColor()
+    {
+        InputField.image.color = calculationColor;
+    }
+
     public override void ResetItem()
     {
         base.ResetItem();
+        Column = -1;
+        SetDefaultColor();
         InputField.onEndEdit.RemoveAllListeners();
         InputField.readOnly = false;
         InputField.onValidateInput = null;

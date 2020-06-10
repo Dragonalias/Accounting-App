@@ -52,13 +52,13 @@ public class AccountingManager : MonoBehaviour
         InsertColumn(column);
         var item = CreateContentItemInput(TMP_InputField.ContentType.IntegerNumber, column.ToString(), false);
         item.Savable = false;
-        InsertContentItem(item, column, 0);
+        contentLogic.InsertContentCountItem(item, column, 0);
     }
     private void AddRow(int row)
     {
         var item = CreateContentItemInput(TMP_InputField.ContentType.IntegerNumber, row.ToString(), false);
         item.Savable = false;
-        InsertContentItem(item, 0, row);
+        contentLogic.InsertContentCountItem(item, 0, row);
     }
     public void InsertColumn(int column)
     {
@@ -67,10 +67,6 @@ public class AccountingManager : MonoBehaviour
     private void RemoveColumn(int column)
     {
         contentLogic.RemoveColumn(column);
-    }
-    private void InsertContentItem(ContentItem contentItem, int column, int row)
-    {
-        contentLogic.InsertContentItem(contentItem, column, row);
     }
     private ContentItemInputField CreateContentItemInput(TMP_InputField.ContentType type, string text, bool interactible)
     {
@@ -92,7 +88,7 @@ public class AccountingManager : MonoBehaviour
     private void AddColumnBase(ContentItem item, int newColumn)
     {
         if (newColumn >= contentLogic.ContentItems.Count) AddColumn(newColumn);
-        InsertContentItem(item, newColumn, 1);
+        contentLogic.InsertContentParentItem(item, newColumn, 1);
         AddRowButton(newColumn, contentLogic.ContentItems[newColumn].Count);
         AddCalculationResultButton(newColumn, contentLogic.ContentItems[newColumn].Count);
     }
@@ -141,8 +137,9 @@ public class AccountingManager : MonoBehaviour
     }
     public void DeletePerson(ContentItem item)
     {
-        RemoveColumn(item.Column);
-        peopleAdded.RemoveAt(item.Column - 1);
+        int column = item.Column;
+        RemoveColumn(column);
+        peopleAdded.RemoveAt(column - 1);
         //Something more here to update all names
     }
 
@@ -152,17 +149,17 @@ public class AccountingManager : MonoBehaviour
         item.Savable = false;
         item.SetActive(true);
         item.MakeClickable(AddFinance);
-        InsertContentItem(item, column, row);
+        contentLogic.InsertContentChildItem(item, column, row);
     }
     private void AddCalculationResultButton(int column, int row)
     {
         var item = CreateContentItemInput(TMP_InputField.ContentType.DecimalNumber, "0", true);
         item.InputField.readOnly = true;
-        item.InputField.image.color += Color.blue;
+        item.SetCalculationColor();
         item.Savable = false;
         item.SetActive(true);
 
-        InsertContentItem(item, column, row);
+        contentLogic.InsertContentChildItem(item, column, row);
     }
     //PersonCode end
     public void AddFinance(int column, int row)
@@ -177,7 +174,7 @@ public class AccountingManager : MonoBehaviour
         item.InputField.onEndEdit.AddListener((x)=>UpdateFinance(item));
         item.MakeDeleteable((x)=> { RemoveContentItem(x); UpdateFinance(x);  });
         if (contentLogic.ContentItems[column].Count >= contentLogic.ContentItems[0].Count) AddRow(contentLogic.ContentItems[column].Count);
-        InsertContentItem(item, column, row);
+        contentLogic.InsertContentChildItem(item, column, row);
         //contentLogic.CalculateBarPositions(item);
     }
     private char FinanceValidation(char charToValidate)

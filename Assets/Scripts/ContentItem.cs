@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 public abstract class ContentItem : MonoBehaviour
@@ -8,15 +9,31 @@ public abstract class ContentItem : MonoBehaviour
     [SerializeField] private RectTransform rectTransform;
     public RectTransform RectTransform { get => rectTransform; }
 
-    private int column;
+    private int column = -1;
     private int row;
     private bool savable = true;
+    private ContentItem parent = null;
 
     public float Width {  get => RectTransform.sizeDelta.x; }
     public float Height { get => RectTransform.sizeDelta.y; }
-    public int Column { get => column; set => column = value; }
+    public int Column 
+    { 
+        get 
+        { 
+            if (column != -1)
+            { 
+                return column; 
+            } 
+            else 
+            { 
+                return parent.Column; 
+            }; 
+        } 
+        set => column = value; 
+    }
     public int Row { get => row; set => row = value; }
     public bool Savable { get => savable; set => savable = value; }
+    public ContentItem Parent { get => parent; set => parent = value; }
 
     public virtual void SetActive(bool active)
     {

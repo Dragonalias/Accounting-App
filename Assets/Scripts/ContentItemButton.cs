@@ -12,7 +12,7 @@ public class ContentItemButton : ContentItem
 
     public void MakeClickable(UnityAction<int, int> action)
     {
-        Button.onClick.AddListener(()=>action(Column, Row));
+        Button.onClick.AddListener(()=>action(Parent.Column, Row));
     }
 
     public override string GetData()

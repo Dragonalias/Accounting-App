@@ -12,6 +12,7 @@ public class PoolObject : MonoBehaviour
         {
             var obj = stack.Pop();
             if (obj == null) return GetInstance(parent);
+            obj.transform.SetParent(parent);
             return obj;
         }
         return Instantiate(this, parent);
