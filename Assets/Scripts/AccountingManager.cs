@@ -39,7 +39,7 @@ public class AccountingManager : MonoBehaviour
         popupSystem.Init(this);
 
         AddColumn(0);
-        for (int i = 1; i < 5; i++)
+        for (int i = 1; i < 8; i++)
         {
             AddColumn(i);
             AddRow(i);
@@ -50,13 +50,13 @@ public class AccountingManager : MonoBehaviour
     public void AddColumn(int column)
     {
         InsertColumn(column);
-        var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.IntegerNumber, column.ToString(), false);
+        var item = CreateContentItemInput(TMP_InputField.ContentType.IntegerNumber, column.ToString(), false);
         item.Savable = false;
         InsertContentItem(item, column, 0);
     }
     private void AddRow(int row)
     {
-        var item = CreateContentItemInput(TMPro.TMP_InputField.ContentType.IntegerNumber, row.ToString(), false);
+        var item = CreateContentItemInput(TMP_InputField.ContentType.IntegerNumber, row.ToString(), false);
         item.Savable = false;
         InsertContentItem(item, 0, row);
     }
@@ -72,7 +72,7 @@ public class AccountingManager : MonoBehaviour
     {
         contentLogic.InsertContentItem(contentItem, column, row);
     }
-    private ContentItemInputField CreateContentItemInput(TMPro.TMP_InputField.ContentType type, string text, bool interactible)
+    private ContentItemInputField CreateContentItemInput(TMP_InputField.ContentType type, string text, bool interactible)
     {
         var contentItem = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
         contentItem.GetComponent<FixScroll>().MainScroll = mainScroll;
@@ -89,6 +89,13 @@ public class AccountingManager : MonoBehaviour
     }
 
     //PersonCode start
+    private void AddColumnBase(ContentItem item, int newColumn)
+    {
+        if (newColumn >= contentLogic.ContentItems.Count) AddColumn(newColumn);
+        InsertContentItem(item, newColumn, 1);
+        AddRowButton(newColumn, contentLogic.ContentItems[newColumn].Count);
+        AddCalculationResultButton(newColumn, contentLogic.ContentItems[newColumn].Count);
+    }
     public void AddPerson()
     {
         AddPerson("Person " + peopleAdded.Count);
@@ -100,12 +107,34 @@ public class AccountingManager : MonoBehaviour
         var item = CreateContentItemInput(TMP_InputField.ContentType.Standard, name, true);
         item.Savable = false;
         item.InputField.onEndEdit.AddListener(delegate { UpdatePersonName(item); });
-        if (peopleAdded.Count >= contentLogic.ContentItems.Count) AddColumn(peopleAdded.Count);
         item.MakeDeleteable(DeletePerson);
-        InsertContentItem(item, peopleAdded.Count, 1);
-        AddRowButton(peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
-        AddCalculationResultButton(peopleAdded.Count, contentLogic.ContentItems[peopleAdded.Count].Count);
+
+        AddColumnBase(item, peopleAdded.Count);
         //contentLogic.CalculateBarPositions(item);
+        //AddRestColumns();
+    }
+    private void AddRestColumns()
+    {
+        if (peopleAdded.Count <= 1) return; //Cant make interpay columns for only 1 person
+        //PersonA paid for joint payment
+        //PersonA paid for PersonB
+        //PersonB paid for PersonA
+        string label;
+        for (int i = peopleAdded.Count - 2; i >= 0; i--)
+        {
+            label = string.Concat(peopleAdded[peopleAdded.Count-1], "\n paid for \n", peopleAdded[i]);
+            AddInterpayItem(label);
+            label = string.Concat(peopleAdded[i], "\n paid for \n", peopleAdded[peopleAdded.Count - 1]);
+            AddInterpayItem(label);
+        }
+        label = string.Concat(peopleAdded[peopleAdded.Count - 1], "\n paid for \n Joint");
+        AddInterpayItem(label);
+    }
+    private void AddInterpayItem(string label)
+    {
+        var item = CreateContentItemInput(TMP_InputField.ContentType.Standard, label, false);
+        item.Savable = false;
+        AddColumnBase(item, peopleAdded.Count+1);
     }
     public void UpdatePersonName(ContentItem item)
     {
@@ -155,15 +184,14 @@ public class AccountingManager : MonoBehaviour
     {
         if (!char.IsNumber(charToValidate) && charToValidate != ',')
         {
-            // ... if it is change it to an empty character.
+            // change it to an empty character.
             charToValidate = '\0';
         }
         return charToValidate;
     }
     public void UpdateFinance(ContentItemInputField item)
     {
-        double fallback = 0;
-        if (!double.TryParse(item.GetData(), out fallback))
+        if (!double.TryParse(item.GetData(), out double fallback))
         {
             item.SetText("0");
         }

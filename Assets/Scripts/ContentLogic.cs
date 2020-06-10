@@ -282,6 +282,7 @@ public class ContentLogic : MonoBehaviour
 public class Column
 {
     public float columnHeight = 0;
+    public List<ContentItem> interpayContentItems = new List<ContentItem>();
     public List<ContentItem> contentItems = new List<ContentItem>();
 
     public int Count { get => contentItems.Count; }
