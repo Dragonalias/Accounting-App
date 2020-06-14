@@ -188,7 +188,7 @@ public class AccountingManager : MonoBehaviour
     }
     public void UpdateFinance(ContentItemInputField item)
     {
-        if (!double.TryParse(item.GetData(), out double fallback))
+        if (!float.TryParse(item.GetData(), out float fallback))
         {
             item.SetText("0");
         }
@@ -196,9 +196,9 @@ public class AccountingManager : MonoBehaviour
     }
     private void CalculateAndSetFinance(int column)
     {
-        double result = contentLogic.ContentItems[column].contentItems.Where(x => x.Savable).Sum(x => double.Parse(x.GetData()));
+        float result = contentLogic.ContentItems[column].contentItems.Where(x => x.Savable).Sum(x => float.Parse(x.GetData()));
         ContentItemInputField calcItem = (ContentItemInputField)contentLogic.ContentItems[column].GetLastContentItem();
-        calcItem.SetText(result.ToString());
+        calcItem.SetText(result.ToString("#.000"));
     }
     
 
