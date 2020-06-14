@@ -16,21 +16,7 @@ public abstract class ContentItem : MonoBehaviour
 
     public float Width {  get => RectTransform.sizeDelta.x; }
     public float Height { get => RectTransform.sizeDelta.y; }
-    public int Column 
-    { 
-        get 
-        { 
-            if (column != -1)
-            { 
-                return column; 
-            } 
-            else 
-            { 
-                return parent.Column; 
-            }; 
-        } 
-        set => column = value; 
-    }
+    public int Column  { get  { return column != -1 ? column : parent.Column; } set => column = value; }
     public int Row { get => row; set => row = value; }
     public bool Savable { get => savable; set => savable = value; }
     public ContentItem Parent { get => parent; set => parent = value; }
