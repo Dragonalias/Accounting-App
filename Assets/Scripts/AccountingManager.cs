@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using System.IO;
-using System;
 using System.Linq;
 using TMPro;
 
@@ -197,7 +195,7 @@ public class AccountingManager : MonoBehaviour
     private void CalculateAndSetFinance(int column)
     {
         float result = contentLogic.ContentItems[column].contentItems.Where(x => x.Savable).Sum(x => float.Parse(x.GetData()));
-        ContentItemInputField calcItem = (ContentItemInputField)contentLogic.ContentItems[column].GetLastContentItem();
+        ContentItemInputField calcItem = (ContentItemInputField)contentLogic.ContentItems[column].GetCalculationContentItem();
         calcItem.SetText(result.ToString("#.000"));
     }
     

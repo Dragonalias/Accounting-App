@@ -332,7 +332,7 @@ public class Column
         if (index >= contentItems.Count) return null;
         return contentItems[index];
     }
-    public ContentItem GetLastContentItem()
+    public ContentItem GetCalculationContentItem()
     {
         return contentItems[contentItems.Count-1];
     }
