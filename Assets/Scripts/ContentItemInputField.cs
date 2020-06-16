@@ -44,10 +44,6 @@ public class ContentItemInputField : ContentItem
     {
         InputField.text = text;
     }
-    public void SetData(string data)
-    {
-        InputField.text = data;
-    }
 
     public void SetDefaultColor()
     {

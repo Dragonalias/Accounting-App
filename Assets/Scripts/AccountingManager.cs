@@ -24,7 +24,8 @@ public class AccountingManager : MonoBehaviour
 
     [SerializeField] private TMP_InputValidator customValidateDoubleWithComma;
 
-    private List<string> peopleAdded = new List<string>();
+    private List<Person> peopleAdded = new List<Person>();
+    private List<Interpay> interPayColumns = new List<Interpay>();
 
     private void Awake()
     {
@@ -37,7 +38,7 @@ public class AccountingManager : MonoBehaviour
         popupSystem.Init(this);
 
         AddColumn(0);
-        for (int i = 1; i < 8; i++)
+        for (int i = 1; i < 5; i++)
         {
             AddColumn(i);
             AddRow(i);
@@ -47,10 +48,12 @@ public class AccountingManager : MonoBehaviour
 
     public void AddColumn(int column)
     {
-        InsertColumn(column);
-        var item = CreateContentItemInput(TMP_InputField.ContentType.IntegerNumber, column.ToString(), false);
-        item.Savable = false;
-        contentLogic.InsertContentCountItem(item, column, 0);
+        if (InsertColumn(column))
+        {
+            var item = CreateContentItemInput(TMP_InputField.ContentType.IntegerNumber, column.ToString(), false);
+            item.Savable = false;
+            contentLogic.InsertContentCountItem(item, column, 0);
+        }
     }
     private void AddRow(int row)
     {
@@ -58,9 +61,9 @@ public class AccountingManager : MonoBehaviour
         item.Savable = false;
         contentLogic.InsertContentCountItem(item, 0, row);
     }
-    public void InsertColumn(int column)
+    public bool InsertColumn(int column)
     {
-        contentLogic.InsertColumn(column);
+        return contentLogic.InsertColumn(column);
     }
     private void RemoveColumn(int column)
     {
@@ -85,7 +88,7 @@ public class AccountingManager : MonoBehaviour
     //PersonCode start
     private void AddColumnBase(ContentItem item, int newColumn)
     {
-        if (newColumn >= contentLogic.ContentItems.Count) AddColumn(newColumn);
+        AddColumn(newColumn);
         contentLogic.InsertContentParentItem(item, newColumn, 1);
         AddRowButton(newColumn, contentLogic.ContentItems[newColumn].Count);
         AddCalculationResultButton(newColumn, contentLogic.ContentItems[newColumn].Count);
@@ -96,16 +99,17 @@ public class AccountingManager : MonoBehaviour
     }
     public void AddPerson(string name)
     {
-        peopleAdded.Add(name);
+        var person = new Person(name);
+        peopleAdded.Add(person);
 
         var item = CreateContentItemInput(TMP_InputField.ContentType.Standard, name, true);
         item.Savable = false;
-        item.InputField.onEndEdit.AddListener(delegate { UpdatePersonName(item); });
+        item.InputField.onEndEdit.AddListener(delegate { person.UpdateName(item.GetData()); });
         item.MakeDeleteable(DeletePerson);
 
         AddColumnBase(item, peopleAdded.Count);
         //contentLogic.CalculateBarPositions(item);
-        //AddRestColumns();
+        AddRestColumns();
     }
     private void AddRestColumns()
     {
@@ -114,21 +118,42 @@ public class AccountingManager : MonoBehaviour
         //PersonA paid for PersonB
         //PersonB paid for PersonA
         string label;
+        List<Person> people = new List<Person>();
         for (int i = peopleAdded.Count - 2; i >= 0; i--)
         {
-            label = string.Concat(peopleAdded[peopleAdded.Count-1], "\n paid for \n", peopleAdded[i]);
-            AddInterpayItem(label);
-            label = string.Concat(peopleAdded[i], "\n paid for \n", peopleAdded[peopleAdded.Count - 1]);
-            AddInterpayItem(label);
+            people.Add(peopleAdded[peopleAdded.Count - 1]); //This person
+            people.Add(peopleAdded[i]); //Other person
+            
+            label = string.Concat(people[0].name, "\n paid for \n", people[1].name);
+            InterpayBase(label, people);
+
+            label = string.Concat(people[1].name, "\n paid for \n", people[0].name);
+            InterpayBase(label, people);
+
+            people.Clear();
         }
-        label = string.Concat(peopleAdded[peopleAdded.Count - 1], "\n paid for \n Joint");
-        AddInterpayItem(label);
+        people.Add(peopleAdded[peopleAdded.Count - 1]);
+        label = string.Concat(people[0].name, "\n paid for \n Joint");
+        
+        InterpayBase(label, people);
     }
-    private void AddInterpayItem(string label)
+    private void InterpayBase(string label, List<Person> people)
     {
-        var item = CreateContentItemInput(TMP_InputField.ContentType.Standard, label, false);
+        var interpay = new Interpay(label);
+        for (int i = 0; i < people.Count; i++)
+        {
+            people[i].connectedColumns.Add(interpay);
+        }
+        AddInterpayItem(interpay);
+    }
+    private void AddInterpayItem(Interpay interpay)
+    {
+        interPayColumns.Add(interpay);
+
+        var item = CreateContentItemInput(TMP_InputField.ContentType.Standard, interpay.name, false);
         item.Savable = false;
-        AddColumnBase(item, peopleAdded.Count+1);
+        interpay.connectedContentItem = item;
+        AddColumnBase(item, peopleAdded.Count+interPayColumns.Count);
     }
     public void UpdatePersonName(ContentItem item)
     {
@@ -325,9 +350,9 @@ public class SaveObject
     public List<string> contentItemData;
     public List<string> peopleAdded;
 
-    public SaveObject(List<Column> list, List<string> peopleAdded)
+    public SaveObject(List<Column> list, List<Person> peopleAdded)
     {
-        this.peopleAdded = peopleAdded;
+        this.peopleAdded = peopleAdded.Select(x=>x.name).ToList();
         columnRowAmount = new List<int>();
         contentItemData = new List<string>();
         columnRowAmount.Add(0); //because we aren't counting the rows and column counters. would be a waste since they are made automatically anyway

@@ -44,18 +44,21 @@ public class ContentLogic : MonoBehaviour
         scrollRect.horizontalScrollbar.onValueChanged.AddListener((x) => AlwaysShowRowCount(x));
         scrollRect.verticalScrollbar.onValueChanged.AddListener((x) => AlwaysShowColumnCountAndPeopleNames(x));
     }
-    public void InsertColumn(int column)
+    public bool InsertColumn(int column)
     {
         if (column != ContentItems.Count)
         {
-            for (int i = column; i < ContentItems.Count; i++)
+            int count = ContentItems.Count;
+            for (int i = column; i < count; i++)
             {
                 MoveEntireColumn(i, i+1);
             }
+            return false;
         }
 
         ContentItems.Insert(column, new Column());
         ChangeWidth(RowWidth());
+        return true;
     }
 
     public void RemoveColumn(int column)
@@ -88,6 +91,7 @@ public class ContentLogic : MonoBehaviour
     private void MoveEntireColumn(int columnToBeMoved, int targetColumn)
     {
         if (ContentItems[columnToBeMoved].Count <= 1) return;
+        if (targetColumn == ContentItems.Count) manager.AddColumn(targetColumn);
         
         ContentItems[targetColumn].AddRange(ContentItems[columnToBeMoved].ReturnRange(1, ContentItems[columnToBeMoved].Count -1));
         
@@ -105,6 +109,12 @@ public class ContentLogic : MonoBehaviour
     }
     public void InsertContentParentItem(ContentItem item, int column, int row)
     {
+        //if (ContentItems[column].isUsed)
+        //{
+        //    Debug.LogError("Column is used!");
+        //    return;
+        //}
+        //ContentItems[column].isUsed = true;
         SetContentItemParentPos(item, column, row);
         InsertContentItemBase(item, column, row);
     }

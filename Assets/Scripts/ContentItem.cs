@@ -30,6 +30,6 @@ public abstract class ContentItem : MonoBehaviour
     public abstract string GetData();
     public virtual void ResetItem()
     {
-
+        Parent = null;
     }
 }
