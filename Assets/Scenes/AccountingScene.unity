@@ -6586,9 +6586,10 @@ MonoBehaviour:
   monthDropDown: {fileID: 1372199592}
   contentInputItem: {fileID: 9063514762520589725, guid: af736b7d95f9baf4fbc3890c8e080a2d,
     type: 3}
+  contentPersonItem: {fileID: 1691443238629148564, guid: 22cb657e477e5cd44a18081e9d2a7aa0,
+    type: 3}
   contentButtonItem: {fileID: 3411119548593272603, guid: f97ea40c2289ae24ba583a4686866180,
     type: 3}
-  customValidateDoubleWithComma: {fileID: 0}
 --- !u!4 &1540970794
 Transform:
   m_ObjectHideFlags: 0

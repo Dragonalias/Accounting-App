@@ -109,12 +109,6 @@ public class ContentLogic : MonoBehaviour
     }
     public void InsertContentParentItem(ContentItem item, int column, int row)
     {
-        //if (ContentItems[column].isUsed)
-        //{
-        //    Debug.LogError("Column is used!");
-        //    return;
-        //}
-        //ContentItems[column].isUsed = true;
         SetContentItemParentPos(item, column, row);
         InsertContentItemBase(item, column, row);
     }
@@ -312,7 +306,6 @@ public class ContentLogic : MonoBehaviour
 public class Column
 {
     public float columnHeight = 0;
-    public bool isUsed = false;
     public List<ContentItem> contentItems = new List<ContentItem>();
 
     public int Count { get => contentItems.Count; }

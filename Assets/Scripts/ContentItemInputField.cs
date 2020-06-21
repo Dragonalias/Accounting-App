@@ -22,6 +22,15 @@ public class ContentItemInputField : ContentItem
         base.SetActive(active);
     }
 
+    public void Instantiate(TMP_InputField.ContentType type, string text, bool interactible, ScrollRect mainScroll)
+    {
+        GetComponent<FixScroll>().MainScroll = mainScroll;
+        SetActive(true);
+        SetType(type);
+        SetText(text);
+        SetInteractable(interactible);
+    }
+
     public void MakeDeleteable(UnityAction<ContentItemInputField> action)
     {
         deleteButton.gameObject.SetActive(true);

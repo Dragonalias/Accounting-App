@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Linq;
@@ -19,13 +20,13 @@ public class AccountingManager : MonoBehaviour
     [SerializeField] private DropdownMonths monthDropDown;
 
     [SerializeField] private PoolObject contentInputItem;
-
+    [SerializeField] private PoolObject contentPersonItem;
     [SerializeField] private PoolObject contentButtonItem;
-
-    [SerializeField] private TMP_InputValidator customValidateDoubleWithComma;
 
     private List<Person> peopleAdded = new List<Person>();
     private List<Interpay> interPayColumns = new List<Interpay>();
+
+    public List<Person> PeopleAdded { get => peopleAdded; }
 
     private void Awake()
     {
@@ -50,34 +51,22 @@ public class AccountingManager : MonoBehaviour
     {
         if (InsertColumn(column))
         {
-            var item = CreateContentItemInput(TMP_InputField.ContentType.IntegerNumber, column.ToString(), false);
+            var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+            item.Instantiate(TMP_InputField.ContentType.IntegerNumber, column.ToString(), false, mainScroll);
             item.Savable = false;
             contentLogic.InsertContentCountItem(item, column, 0);
         }
     }
     private void AddRow(int row)
     {
-        var item = CreateContentItemInput(TMP_InputField.ContentType.IntegerNumber, row.ToString(), false);
+        var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+        item.Instantiate(TMP_InputField.ContentType.IntegerNumber, row.ToString(), false, mainScroll);
         item.Savable = false;
         contentLogic.InsertContentCountItem(item, 0, row);
     }
     public bool InsertColumn(int column)
     {
         return contentLogic.InsertColumn(column);
-    }
-    private void RemoveColumn(int column)
-    {
-        contentLogic.RemoveColumn(column);
-    }
-    private ContentItemInputField CreateContentItemInput(TMP_InputField.ContentType type, string text, bool interactible)
-    {
-        var contentItem = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
-        contentItem.GetComponent<FixScroll>().MainScroll = mainScroll;
-        contentItem.SetActive(true);
-        contentItem.SetType(type);
-        contentItem.SetText(text);
-        contentItem.SetInteractable(interactible);
-        return contentItem;
     }
 
     public void RemoveContentItem(ContentItem item)
@@ -102,14 +91,37 @@ public class AccountingManager : MonoBehaviour
         var person = new Person(name);
         peopleAdded.Add(person);
 
-        var item = CreateContentItemInput(TMP_InputField.ContentType.Standard, name, true);
+        var item = contentPersonItem.GetInstance(contentLogic.transform).GetComponent<ContentItemPerson>();
+        item.Instantiate(TMP_InputField.ContentType.Standard, name, true, mainScroll);
         item.Savable = false;
+        item.Init(this, person);
         item.InputField.onEndEdit.AddListener(delegate { person.UpdateName(item.GetData()); });
         item.MakeDeleteable(DeletePerson);
 
         AddColumnBase(item, peopleAdded.Count);
+
+        person.connectedContentItem = item;
+        if (PeopleAdded.Count > 1) UpdateNewPersonInterpayMenu(person);
+
+        
         //contentLogic.CalculateBarPositions(item);
-        AddRestColumns();
+    }
+
+    private void UpdateNewPersonInterpayMenu(Person newPerson)
+    {
+        for (int i = 0; i < PeopleAdded.Count -1; i++)
+        {
+            PeopleAdded[i].UpdateMenuWithNewPerson(newPerson);
+        }
+    }
+    private void DeletePersonInterpayMenu(Person deletePerson)
+    {
+        for (int i = 0; i < PeopleAdded.Count; i++) // -1 to not update the newly created person
+        {
+            Person person = PeopleAdded[i];
+            if (person == deletePerson) continue;
+            PeopleAdded[i].DeleteButtonFromMenu(deletePerson);
+        }
     }
     private void AddRestColumns()
     {
@@ -123,47 +135,74 @@ public class AccountingManager : MonoBehaviour
         {
             people.Add(peopleAdded[peopleAdded.Count - 1]); //This person
             people.Add(peopleAdded[i]); //Other person
-            
+
             label = string.Concat(people[0].name, "\n paid for \n", people[1].name);
-            InterpayBase(label, people);
+            CreateInterpay(label, people[0], people[1]);
 
             label = string.Concat(people[1].name, "\n paid for \n", people[0].name);
-            InterpayBase(label, people);
+            CreateInterpay(label, people[1], people[0]);
 
             people.Clear();
         }
         people.Add(peopleAdded[peopleAdded.Count - 1]);
         label = string.Concat(people[0].name, "\n paid for \n Joint");
-        
-        InterpayBase(label, people);
+
+        CreateInterpay(label, people[0]);
     }
-    private void InterpayBase(string label, List<Person> people)
+    public void CreateInterpay(string label, Person thisPerson, Person otherPerson = null)
     {
-        var interpay = new Interpay(label);
-        for (int i = 0; i < people.Count; i++)
-        {
-            people[i].connectedColumns.Add(interpay);
-        }
+        var interpay = new Interpay(label, thisPerson, otherPerson);
+        thisPerson.connectedColumns.Add(interpay);
+        if(otherPerson != null) otherPerson.connectedColumns.Add(interpay);
         AddInterpayItem(interpay);
     }
     private void AddInterpayItem(Interpay interpay)
     {
         interPayColumns.Add(interpay);
 
-        var item = CreateContentItemInput(TMP_InputField.ContentType.Standard, interpay.name, false);
+        var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+        item.Instantiate(TMP_InputField.ContentType.Standard, interpay.name, false, mainScroll);
         item.Savable = false;
         interpay.connectedContentItem = item;
         AddColumnBase(item, peopleAdded.Count+interPayColumns.Count);
     }
-    public void UpdatePersonName(ContentItem item)
-    {
-    }
     public void DeletePerson(ContentItem item)
     {
         int column = item.Column;
-        RemoveColumn(column);
+        Person person = peopleAdded[column - 1];
+        if (person.connectedColumns.Count > 0)
+        {
+            DeleteInterpayItems(person);
+        }
+        DeletePersonInterpayMenu(person);
+        contentLogic.RemoveColumn(column);
         peopleAdded.RemoveAt(column - 1);
-        //Something more here to update all names
+
+        if (peopleAdded.Count == 1) //if theres only 1 person left, it shouldn't have any connectedcolumns
+        {
+            person = peopleAdded[0];
+            person.ClearMenu();
+            if (person.connectedColumns.Count > 0)
+            {
+                DeleteInterpayItems(person);
+            }
+        }
+    }
+    private void DeleteInterpayItems(Person person)
+    {
+        for (int i = person.connectedColumns.Count - 1; i >= 0; i--)
+        {
+            var cc = person.connectedColumns[i];
+            var interPayColumn = cc.connectedContentItem.Column;
+            if (cc.isBeingPaidFor != null)
+            {
+                cc.isBeingPaidFor.RemoveConnectedColumn(cc);
+            }
+            cc.paidFor.RemoveConnectedColumn(cc);
+
+            interPayColumns.RemoveAt(interPayColumn - 1 - peopleAdded.Count);
+            contentLogic.RemoveColumn(interPayColumn);
+        }
     }
 
     private void AddRowButton(int column, int row)
@@ -176,7 +215,8 @@ public class AccountingManager : MonoBehaviour
     }
     private void AddCalculationResultButton(int column, int row)
     {
-        var item = CreateContentItemInput(TMP_InputField.ContentType.DecimalNumber, "0", true);
+        var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+        item.Instantiate(TMP_InputField.ContentType.DecimalNumber, "0", true, mainScroll);
         item.InputField.readOnly = true;
         item.SetCalculationColor();
         item.Savable = false;
@@ -191,7 +231,8 @@ public class AccountingManager : MonoBehaviour
     }
     public void AddFinance(int column, int row, string text)
     {
-        var item = CreateContentItemInput(TMP_InputField.ContentType.Custom, text, true);
+        var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+        item.Instantiate(TMP_InputField.ContentType.Custom, text, true, mainScroll);
         item.Savable = true;
         item.InputField.onValidateInput = delegate (string input, int charIndex, char addedChar) { return FinanceValidation(addedChar); };
         item.InputField.onEndEdit.AddListener((x)=>UpdateFinance(item));
@@ -309,7 +350,7 @@ public class AccountingManager : MonoBehaviour
         peopleAdded.Clear();
         for (int i = contentLogic.ContentItems.Count - 1; i >= 1; i--)
         {
-            RemoveColumn(i);
+            contentLogic.RemoveColumn(i);
         }
     }
 

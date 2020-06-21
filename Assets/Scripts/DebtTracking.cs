@@ -11,6 +11,7 @@ public class DebtTracking
 public class Person
 {
     public string name;
+    public ContentItemPerson connectedContentItem;
     public Dictionary<string, DebtTracking> debtTracking = new Dictionary<string, DebtTracking>();
     public List<Interpay> connectedColumns = new List<Interpay>();
 
@@ -31,19 +32,43 @@ public class Person
         
         name = newName;
     }
+
+    public void UpdateMenuWithNewPerson(Person newPerson)
+    {
+        connectedContentItem.UpdateMenuWithNewPerson(newPerson);
+    }
+    public void DeleteButtonFromMenu(Person deletePerson)
+    {
+        connectedContentItem.RemoveButton(deletePerson);
+    }
+    public void ClearMenu()
+    {
+        connectedContentItem.ClearMenu();
+    }
+
+    public void RemoveConnectedColumn(Interpay item)
+    {
+        Debug.Log(name + " columns: " + connectedColumns.Count);
+        connectedColumns.Remove(item);
+        Debug.Log(name + " columns: " + connectedColumns.Count);
+    }
 }
 public class Interpay
 {
     public string name;
+    public Person paidFor;
+    public Person isBeingPaidFor;
     public ContentItemInputField connectedContentItem;
 
     public Interpay()
     {
     }
 
-    public Interpay(string name)
+    public Interpay(string name, Person paidFor, Person isBeingPaidFor = null)
     {
         this.name = name;
+        this.isBeingPaidFor = isBeingPaidFor;
+        this.paidFor = paidFor;
     }
     public void UpdateName(string oldName, string newName)
     {
