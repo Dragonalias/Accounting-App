@@ -107,6 +107,11 @@ public class AccountingManager : MonoBehaviour
         //contentLogic.CalculateBarPositions(item);
     }
 
+    private void UpdateName(Person person, string newName)
+    {
+
+    }
+
     private void UpdateNewPersonInterpayMenu(Person newPerson)
     {
         for (int i = 0; i < PeopleAdded.Count -1; i++)

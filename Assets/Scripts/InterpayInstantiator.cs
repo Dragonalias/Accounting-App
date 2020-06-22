@@ -10,17 +10,10 @@ public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
     [SerializeField] private PoolObject btnPrefab;
     [SerializeField] private GameObject parent;
 
-    private List<BtnRebuilder> btnList = new List<BtnRebuilder>();
+    private List<Person> btnList = new List<Person>();
     private AccountingManager manager;
     private ContentItemPerson personContentItem;
 
-
-    private struct BtnRebuilder
-    {
-        public string buttonLabel;
-        public string columnLabel;
-        public Person otherPerson;
-    }
     public void Init(AccountingManager manager, ContentItemPerson personContentItem)
     {
         this.manager = manager;
@@ -28,10 +21,10 @@ public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
 
         if (manager.PeopleAdded.Count > 1)
         {
-            MakeBtnRebuilder();
+            AddPerson();
             for (int i = 0; i < manager.PeopleAdded.Count - 1; i++)
             {
-                MakeBtnRebuilder(manager.PeopleAdded[i]);
+                AddPerson(manager.PeopleAdded[i]);
             }
         }
     }
@@ -40,47 +33,45 @@ public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
     {
         if (btnList.Count == 0)
         {
-            MakeBtnRebuilder();
+            AddPerson();
         }
 
-        MakeBtnRebuilder(newPerson);
+        AddPerson(newPerson);
     }
 
-    private void MakeBtnRebuilder(Person newPerson = null)
+    private void AddPerson(Person newPerson = null)
     {
-        BtnRebuilder btnRebuilder = new BtnRebuilder();
-        Person thisPerson = personContentItem.ConnectedPerson;
-        if (newPerson != null)
-        {
-            btnRebuilder.buttonLabel = string.Concat("Paid for ", newPerson.name);
-            btnRebuilder.columnLabel = string.Concat(thisPerson.name, "\n paid for \n", newPerson.name);
-            btnRebuilder.otherPerson = newPerson;
-        }
-        else
-        {
-            btnRebuilder.buttonLabel = "Paid for Joint";
-            btnRebuilder.columnLabel = string.Concat(thisPerson.name, "\n paid for \n", "Joint");
-        }
-
-        btnList.Add(btnRebuilder);
+        btnList.Add(newPerson);
     }
-    private void MakeButtonFromRebuilder(BtnRebuilder btnRebuilder)
+
+    private void MakeButton(Person otherPerson = null)
     {
         var btn = btnPrefab.GetInstance(transform).GetComponent<InterpayInstantiatorButton>();
         btn.Activate();
-        btn.buttonText.text = btnRebuilder.buttonLabel;
+        string buttonLabel;
+        string columnLabel;
+        if (otherPerson != null)
+        {
+            buttonLabel = string.Concat("Paid for ", otherPerson.name);
+            columnLabel = string.Concat(personContentItem.ConnectedPerson.name, "\n paid for \n", otherPerson.name);
+        }
+        else
+        {
+            buttonLabel = "Paid for Joint";
+            columnLabel = string.Concat(personContentItem.ConnectedPerson.name, "\n paid for \n", "Joint");
+        }
+        btn.buttonText.text = buttonLabel;
         btn.thisButton.onClick.AddListener(
             () =>
             {
-                manager.CreateInterpay(btnRebuilder.columnLabel, personContentItem.ConnectedPerson, btnRebuilder.otherPerson);
-                btnList.Remove(btnRebuilder);
+                manager.CreateInterpay(columnLabel, personContentItem.ConnectedPerson, otherPerson);
+                btnList.Remove(otherPerson);
             });
     }
 
     public void RemoveButton(Person deletePerson)
     {
-        int i = btnList.FindIndex(btn => btn.otherPerson == deletePerson);
-        if(i != -1) btnList.RemoveAt(i);
+        btnList.Remove(deletePerson);
     }
 
     public void On()
@@ -88,7 +79,7 @@ public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
         parent.SetActive(true);
         for (int i = 0; i < btnList.Count; i++)
         {
-            MakeButtonFromRebuilder(btnList[i]);
+            MakeButton(btnList[i]);
         }
     }
     public void Off()
