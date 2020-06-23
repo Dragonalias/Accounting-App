@@ -24,14 +24,12 @@ public class InterpayInstantiator : MonoBehaviour
         thisGameobject = gameObject;
         currentES = EventSystem.current;
 
-        if (manager.PeopleAdded.Count > 1)
+        AddPerson();
+        for (int i = 0; i < manager.PeopleAdded.Count - 1; i++)
         {
-            AddPerson();
-            for (int i = 0; i < manager.PeopleAdded.Count - 1; i++)
-            {
-                AddPerson(manager.PeopleAdded[i]);
-            }
+            AddPerson(manager.PeopleAdded[i]);
         }
+        
     }
 
     //Wonky af, but its the best way i could find to hide this when clicking away while also being able to click button
@@ -43,19 +41,18 @@ public class InterpayInstantiator : MonoBehaviour
         }
     }
 
-    public void UpdateMenuWithNewPerson(Person newPerson)
+    public void UpdateMenuWithNewPerson(Person newPerson = null)
     {
-        if (btnList.Count == 0)
-        {
-            AddPerson();
-        }
-
         AddPerson(newPerson);
     }
 
     private void AddPerson(Person newPerson = null)
     {
-        btnList.Add(newPerson);
+        if (newPerson != null)
+        {
+            btnList.Add(newPerson);
+        }
+        else btnList.Insert(0, newPerson);
     }
 
     private void MakeButton(Person otherPerson = null)
@@ -92,10 +89,15 @@ public class InterpayInstantiator : MonoBehaviour
     public void On()
     {
         parent.SetActive(true);
-        for (int i = 0; i < btnList.Count; i++)
+
+        if (manager.PeopleAdded.Count > 1)
         {
-            MakeButton(btnList[i]);
+            for (int i = 0; i < btnList.Count; i++)
+            {
+                MakeButton(btnList[i]);
+            }
         }
+        
     }
     public void Off()
     {

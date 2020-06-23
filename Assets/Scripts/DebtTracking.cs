@@ -33,7 +33,7 @@ public class Person
         name = newName;
     }
 
-    public void UpdateMenuWithNewPerson(Person newPerson)
+    public void UpdateMenuWithNewPerson(Person newPerson = null)
     {
         connectedContentItem.UpdateMenuWithNewPerson(newPerson);
     }
@@ -48,9 +48,7 @@ public class Person
 
     public void RemoveConnectedColumn(Interpay item)
     {
-        Debug.Log(name + " columns: " + connectedColumns.Count);
         connectedColumns.Remove(item);
-        Debug.Log(name + " columns: " + connectedColumns.Count);
     }
 }
 public class Interpay
@@ -73,7 +71,6 @@ public class Interpay
     public void UpdateName(string oldName, string newName)
     {
         name = name.Replace(oldName, newName);
-        Debug.Log(string.Concat("newname: ",newName, " oldname: ", oldName, " name: ", name));
         connectedContentItem.SetText(name);
     }
 }

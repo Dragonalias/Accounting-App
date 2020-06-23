@@ -107,11 +107,6 @@ public class AccountingManager : MonoBehaviour
         //contentLogic.CalculateBarPositions(item);
     }
 
-    private void UpdateName(Person person, string newName)
-    {
-
-    }
-
     private void UpdateNewPersonInterpayMenu(Person newPerson)
     {
         for (int i = 0; i < PeopleAdded.Count -1; i++)
@@ -168,6 +163,7 @@ public class AccountingManager : MonoBehaviour
         var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
         item.Instantiate(TMP_InputField.ContentType.Standard, interpay.name, false, mainScroll);
         item.Savable = false;
+        item.MakeDeleteable(DeleteInterpay);
         interpay.connectedContentItem = item;
         AddColumnBase(item, peopleAdded.Count+interPayColumns.Count);
     }
@@ -177,7 +173,7 @@ public class AccountingManager : MonoBehaviour
         Person person = peopleAdded[column - 1];
         if (person.connectedColumns.Count > 0)
         {
-            DeleteInterpayItems(person);
+            DeleteConnectedInterpayItems(person);
         }
         DeletePersonInterpayMenu(person);
         contentLogic.RemoveColumn(column);
@@ -189,11 +185,11 @@ public class AccountingManager : MonoBehaviour
             person.ClearMenu();
             if (person.connectedColumns.Count > 0)
             {
-                DeleteInterpayItems(person);
+                DeleteConnectedInterpayItems(person);
             }
         }
     }
-    private void DeleteInterpayItems(Person person)
+    private void DeleteConnectedInterpayItems(Person person)
     {
         for (int i = person.connectedColumns.Count - 1; i >= 0; i--)
         {
@@ -207,6 +203,40 @@ public class AccountingManager : MonoBehaviour
 
             interPayColumns.RemoveAt(interPayColumn - 1 - peopleAdded.Count);
             contentLogic.RemoveColumn(interPayColumn);
+        }
+    }
+    private void DeleteInterpay(ContentItem item)
+    {
+        int interPayColumn = item.Column;
+        int index = interPayColumn - 1 - peopleAdded.Count;
+        Interpay interPay = interPayColumns[index];
+
+        interPay.paidFor.RemoveConnectedColumn(interPay);
+        if (interPay.isBeingPaidFor != null)
+        {
+            interPay.paidFor.UpdateMenuWithNewPerson(interPay.isBeingPaidFor);
+            interPay.isBeingPaidFor.RemoveConnectedColumn(interPay);
+        }
+        else
+        {
+            interPay.paidFor.UpdateMenuWithNewPerson();
+        }
+
+        interPayColumns.RemoveAt(index);
+        contentLogic.RemoveColumn(interPayColumn);
+
+        foreach (var col in interPayColumns)
+        {
+            Debug.Log("interpayColumns: " +col.name);
+        }
+        foreach (var person in peopleAdded)
+        {
+            Debug.Log("people: " + person.name);
+
+            foreach (var interpayCol in person.connectedColumns)
+            {
+                Debug.Log("PeopleinterpayColumns: " + interpayCol.name);
+            }
         }
     }
 
@@ -377,15 +407,6 @@ public class AccountingManager : MonoBehaviour
                 }
             }
         }
-
-        //if (Input.GetKeyDown(KeyCode.A))
-        //{
-        //    SaveMonth("August", "2020");
-        //}
-        //if (Input.GetKeyDown(KeyCode.B))
-        //{
-        //    ClearUIExceptCounters();
-        //}
     }
 }
 
