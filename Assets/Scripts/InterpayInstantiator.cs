@@ -4,8 +4,9 @@ using System.Linq;
 using UnityEditor.Networking.PlayerConnection;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UIElements;
 
-public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
+public class InterpayInstantiator : MonoBehaviour
 {
     [SerializeField] private PoolObject btnPrefab;
     [SerializeField] private GameObject parent;
@@ -13,11 +14,15 @@ public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
     private List<Person> btnList = new List<Person>();
     private AccountingManager manager;
     private ContentItemPerson personContentItem;
+    private GameObject thisGameobject;
+    private EventSystem currentES;
 
     public void Init(AccountingManager manager, ContentItemPerson personContentItem)
     {
         this.manager = manager;
         this.personContentItem = personContentItem;
+        thisGameobject = gameObject;
+        currentES = EventSystem.current;
 
         if (manager.PeopleAdded.Count > 1)
         {
@@ -26,6 +31,15 @@ public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
             {
                 AddPerson(manager.PeopleAdded[i]);
             }
+        }
+    }
+
+    //Wonky af, but its the best way i could find to hide this when clicking away while also being able to click button
+    private void Update()
+    {
+        if(currentES.currentSelectedGameObject == null || (currentES.currentSelectedGameObject != thisGameobject && !currentES.currentSelectedGameObject.TryGetComponent(out InterpayInstantiatorButton dummy)))
+        {
+            Off();
         }
     }
 
@@ -66,6 +80,7 @@ public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
             {
                 manager.CreateInterpay(columnLabel, personContentItem.ConnectedPerson, otherPerson);
                 btnList.Remove(otherPerson);
+                Off();
             });
     }
 
@@ -91,16 +106,5 @@ public class InterpayInstantiator : MonoBehaviour, IDeselectHandler
     public void ResetMenu()
     {
         btnList.Clear();
-    }
-
-    public void OnDeselect(BaseEventData eventData)
-    {
-        StartCoroutine(j());
-    }
-
-    IEnumerator j()
-    {
-        yield return new WaitForSeconds(1);
-        Off();
     }
 }

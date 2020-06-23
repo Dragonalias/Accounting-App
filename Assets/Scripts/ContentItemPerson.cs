@@ -33,7 +33,7 @@ public class ContentItemPerson : ContentItemInputField, IPointerClickHandler
         if (eventData.button == PointerEventData.InputButton.Right)
         {
             interpayInstantiator.On();
-            EventSystem.current.SetSelectedGameObject(interpayInstantiator.gameObject, eventData);
+            EventSystem.current.SetSelectedGameObject(interpayInstantiator.gameObject);
         }
     }
 
