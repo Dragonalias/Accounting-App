@@ -297,7 +297,7 @@ public class AccountingManager : MonoBehaviour
     {
         float result = contentLogic.ContentItems[column].contentItems.Where(x => x.Savable).Sum(x => float.Parse(x.GetData()));
         ContentItemInputField calcItem = (ContentItemInputField)contentLogic.ContentItems[column].GetCalculationContentItem();
-        calcItem.SetText(result.ToString("#.000"));
+        calcItem.SetText(result.ToString("#.00"));
     }
     
 
