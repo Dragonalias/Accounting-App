@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class FixScroll : MonoBehaviour, IScrollHandler
 {
-    public ScrollRect MainScroll;
+    [HideInInspector] public ScrollRect MainScroll;
     public Transform textArea;
 
     private Vector2 dummyVector = new Vector2(0,0);
