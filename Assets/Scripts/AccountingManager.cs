@@ -22,6 +22,7 @@ public class AccountingManager : MonoBehaviour
     [SerializeField] private PoolObject contentInputItem;
     [SerializeField] private PoolObject contentPersonItem;
     [SerializeField] private PoolObject contentButtonItem;
+    [SerializeField] private PoolObject contentFinanceItem;
 
     private List<Person> peopleAdded = new List<Person>();
     private List<Interpay> interPayColumns = new List<Interpay>();
@@ -264,15 +265,18 @@ public class AccountingManager : MonoBehaviour
     {
         AddFinance(column, row, "0");
     }
-    public void AddFinance(int column, int row, string text)
+    public void AddFinance(int column, int row, string text, string noteText = null)
     {
-        var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
+        var item = contentFinanceItem.GetInstance(contentLogic.transform).GetComponent<ContentItemFinance>();
         item.Instantiate(TMP_InputField.ContentType.Custom, text, true, mainScroll);
         item.Savable = true;
         item.InputField.onValidateInput = delegate (string input, int charIndex, char addedChar) { return FinanceValidation(addedChar); };
         item.InputField.onEndEdit.AddListener((x)=>UpdateFinance(item));
         item.MakeDeleteable((x)=> { RemoveContentItem(x); UpdateFinance(x);  });
+
+        if (noteText != null) item.SetNoteText(noteText);
         if (contentLogic.ContentItems[column].Count >= contentLogic.ContentItems[0].Count) AddRow(contentLogic.ContentItems[column].Count);
+
         contentLogic.InsertContentChildItem(item, column, row);
         //contentLogic.CalculateBarPositions(item);
     }
@@ -371,34 +375,36 @@ public class AccountingManager : MonoBehaviour
 
         if (saveobj.peopleAdded.Count == 0) return;
 
+        //Create people and give their value
         int contentCounter = 0;
         for (int i = 1; i <= saveobj.peopleAdded.Count; i++)
         {
             AddPerson(saveobj.peopleAdded[i-1]);
-            for (int j = 1; j <= saveobj.columnRowAmount[i]; j++)
-            {
-                AddFinance(i, j +1, saveobj.contentItemData[contentCounter]);
-                contentCounter++;
-            }
-            CalculateAndSetFinance(i);
+            LoadFinanceItems(saveobj, ref contentCounter, i);
         }
+
+        //CReate interpay columns and give value
         if (saveobj.interPayColumns.Count > 0)
         {
             for (int i = 0; i < saveobj.interPayColumns.Count; i++)
             {
                 var interpaySaveObj = saveobj.interPayColumns[i];
                 var paidFor = peopleAdded[interpaySaveObj.paidFor -1];
-                paidFor.connectedContentItem.SimulatedInterpayClick(interpaySaveObj.isBeingPaidFor != 0 ? peopleAdded[interpaySaveObj.isBeingPaidFor - 1] : null);
+                paidFor.connectedContentItem.SimulatedInterpayClick(interpaySaveObj.isBeingPaidFor != -1 ? peopleAdded[interpaySaveObj.isBeingPaidFor - 1] : null);
 
-                int column = peopleAdded.Count + interPayColumns.Count;
-                for (int j = 1; j <= saveobj.columnRowAmount[column]; j++)
-                {
-                    AddFinance(column, j + 1, saveobj.contentItemData[contentCounter]);
-                    contentCounter++;
-                }
-                CalculateAndSetFinance(column);
+                LoadFinanceItems(saveobj, ref contentCounter, (peopleAdded.Count + interPayColumns.Count));
             }
         }
+    }
+    private void LoadFinanceItems(SaveObject saveobj,ref int contentCounter, int column)
+    {
+        for (int j = 1; j <= saveobj.columnRowAmount[column]; j++)
+        {
+            var saveItem = saveobj.contentItemData[contentCounter];
+            AddFinance(column, j + 1, saveItem.financeData, saveItem.noteData);
+            contentCounter++;
+        }
+        CalculateAndSetFinance(column);
     }
     private void ClearUIExceptCounters()
     {
@@ -435,28 +441,47 @@ public class AccountingManager : MonoBehaviour
 public class SaveObject
 {
     public List<int> columnRowAmount;
-    public List<string> contentItemData;
+    public List<SaveItemObject> contentItemData;
     public List<string> peopleAdded;
     public List<InterpaySaveObject> interPayColumns;
 
     public SaveObject(List<Column> list, List<Person> peopleAdded, List<Interpay> interPayColumns)
     {
         this.peopleAdded = peopleAdded.Select(x=>x.name).ToList();
-        this.interPayColumns = interPayColumns.Select(x => new InterpaySaveObject(x.paidFor.connectedContentItem.Column, x.isBeingPaidFor != null ? x.isBeingPaidFor.connectedContentItem.Column : 0)).ToList();
+        this.interPayColumns = interPayColumns.Select(x => new InterpaySaveObject(x.paidFor.connectedContentItem.Column, x.isBeingPaidFor != null ? x.isBeingPaidFor.connectedContentItem.Column : -1)).ToList();
         columnRowAmount = new List<int>();
-        contentItemData = new List<string>();
+        contentItemData = new List<SaveItemObject>();
         columnRowAmount.Add(0); //because we aren't counting the rows and column counters. would be a waste since they are made automatically anyway
 
         for (int i = 1; i < list.Count; i++)
         {
-            columnRowAmount.Add(0); //because we aren't counting the rows and column counters. would be a waste since they are made automatically anyway
+            columnRowAmount.Add(0);
             for (int j = 1; j < list[i].Count; j++)
             {
                 ContentItem item = list[i].GetContentItem(j);
                 if (!item.Savable) continue;
-                contentItemData.Add(item.GetData());
+                var saveItem = new SaveItemObject(item.GetData());
+
+                if (item is ContentItemFinance)
+                {
+                    saveItem.noteData = ((ContentItemFinance)item).GetNoteText();
+                }
+
+                contentItemData.Add(saveItem);
                 columnRowAmount[i]++;
             }
         }
+    }
+}
+
+[System.Serializable]
+public struct SaveItemObject
+{
+    public string financeData;
+    public string noteData;
+
+    public SaveItemObject(string financeData) : this()
+    {
+        this.financeData = financeData;
     }
 }

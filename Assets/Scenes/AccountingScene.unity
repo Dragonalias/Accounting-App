@@ -6590,6 +6590,8 @@ MonoBehaviour:
     type: 3}
   contentButtonItem: {fileID: 3411119548593272603, guid: f97ea40c2289ae24ba583a4686866180,
     type: 3}
+  contentFinanceItem: {fileID: 1894113354746680625, guid: 2e88b3217ba406a448fc2aa383ed0f6f,
+    type: 3}
 --- !u!4 &1540970794
 Transform:
   m_ObjectHideFlags: 0
