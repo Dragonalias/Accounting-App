@@ -61,24 +61,26 @@ public class InterpayInstantiator : MonoBehaviour
         btn.Activate();
         string buttonLabel;
         string columnLabel;
-        if (otherPerson != null)
-        {
-            buttonLabel = string.Concat("Paid for ", otherPerson.name);
-            columnLabel = string.Concat(personContentItem.ConnectedPerson.name, "\n paid for \n", otherPerson.name);
-        }
-        else
-        {
-            buttonLabel = "Paid for Joint";
-            columnLabel = string.Concat(personContentItem.ConnectedPerson.name, "\n paid for \n", "Joint");
-        }
+        GetLabels(out buttonLabel, out columnLabel, otherPerson);
         btn.buttonText.text = buttonLabel;
         btn.thisButton.onClick.AddListener(
             () =>
             {
-                manager.CreateInterpay(columnLabel, personContentItem.ConnectedPerson, otherPerson);
-                btnList.Remove(otherPerson);
+                OnClick(columnLabel, otherPerson);
                 Off();
             });
+    }
+    private void OnClick(string columnLabel, Person otherPerson = null)
+    {
+        manager.CreateInterpay(columnLabel, personContentItem.ConnectedPerson, otherPerson);
+        btnList.Remove(otherPerson);
+    }
+
+    public void SimulatedClick(Person otherPerson = null)
+    {
+        string columnLabel;
+        GetLabels(out string buttonLabel, out columnLabel, otherPerson);
+        OnClick(columnLabel, otherPerson);
     }
 
     public void RemoveButton(Person deletePerson)
@@ -108,5 +110,19 @@ public class InterpayInstantiator : MonoBehaviour
     public void ResetMenu()
     {
         btnList.Clear();
+    }
+
+    private void GetLabels(out string buttonLabel, out string columnLabel, Person otherPerson = null)
+    {
+        if (otherPerson != null)
+        {
+            buttonLabel = string.Concat("Paid for ", otherPerson.name);
+            columnLabel = string.Concat(personContentItem.ConnectedPerson.name, "\n paid for \n", otherPerson.name);
+        }
+        else
+        {
+            buttonLabel = "Paid for Joint";
+            columnLabel = string.Concat(personContentItem.ConnectedPerson.name, "\n paid for \n", "Joint");
+        }
     }
 }

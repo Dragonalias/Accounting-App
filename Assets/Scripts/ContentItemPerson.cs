@@ -37,6 +37,11 @@ public class ContentItemPerson : ContentItemInputField, IPointerClickHandler
         }
     }
 
+    public void SimulatedInterpayClick(Person otherPerson = null)
+    {
+        interpayInstantiator.SimulatedClick(otherPerson);
+    }
+
     public override void ResetItem()
     {
         base.ResetItem();

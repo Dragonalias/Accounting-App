@@ -74,3 +74,16 @@ public class Interpay
         connectedContentItem.SetText(name);
     }
 }
+
+[System.Serializable]
+public struct InterpaySaveObject
+{
+    public int paidFor;
+    public int isBeingPaidFor;
+
+    public InterpaySaveObject(int paidFor, int isBeingPaidFor)
+    {
+        this.paidFor = paidFor;
+        this.isBeingPaidFor = isBeingPaidFor;
+    }
+}

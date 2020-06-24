@@ -303,7 +303,7 @@ public class AccountingManager : MonoBehaviour
 
     public void SaveMonth(string month, string year)
     {
-        SaveObject saveobj = new SaveObject(contentLogic.ContentItems, peopleAdded);
+        SaveObject saveobj = new SaveObject(contentLogic.ContentItems, peopleAdded, interPayColumns);
         string json = JsonUtility.ToJson(saveobj);
         string name = string.Concat(year, " ", month);
         if (!SaveSystem.Save(name + ".json", json))//Save does not override anything, meaning that month must be added
@@ -368,21 +368,42 @@ public class AccountingManager : MonoBehaviour
     private void PopulateUI(SaveObject saveobj)
     {
         ClearUIExceptCounters();
+
+        if (saveobj.peopleAdded.Count == 0) return;
+
         int contentCounter = 0;
-        for (int i = 0; i < saveobj.peopleAdded.Count; i++)
+        for (int i = 1; i <= saveobj.peopleAdded.Count; i++)
         {
-            AddPerson(saveobj.peopleAdded[i]);
-            for (int j = 1; j <= saveobj.columnRowAmount[i+1]; j++)
+            AddPerson(saveobj.peopleAdded[i-1]);
+            for (int j = 1; j <= saveobj.columnRowAmount[i]; j++)
             {
-                AddFinance(i+1, j +1, saveobj.contentItemData[contentCounter]);
+                AddFinance(i, j +1, saveobj.contentItemData[contentCounter]);
                 contentCounter++;
             }
-            CalculateAndSetFinance(i + 1);
+            CalculateAndSetFinance(i);
+        }
+        if (saveobj.interPayColumns.Count > 0)
+        {
+            for (int i = 0; i < saveobj.interPayColumns.Count; i++)
+            {
+                var interpaySaveObj = saveobj.interPayColumns[i];
+                var paidFor = peopleAdded[interpaySaveObj.paidFor -1];
+                paidFor.connectedContentItem.SimulatedInterpayClick(interpaySaveObj.isBeingPaidFor != 0 ? peopleAdded[interpaySaveObj.isBeingPaidFor - 1] : null);
+
+                int column = peopleAdded.Count + interPayColumns.Count;
+                for (int j = 1; j <= saveobj.columnRowAmount[column]; j++)
+                {
+                    AddFinance(column, j + 1, saveobj.contentItemData[contentCounter]);
+                    contentCounter++;
+                }
+                CalculateAndSetFinance(column);
+            }
         }
     }
     private void ClearUIExceptCounters()
     {
         peopleAdded.Clear();
+        interPayColumns.Clear();
         for (int i = contentLogic.ContentItems.Count - 1; i >= 1; i--)
         {
             contentLogic.RemoveColumn(i);
@@ -416,10 +437,12 @@ public class SaveObject
     public List<int> columnRowAmount;
     public List<string> contentItemData;
     public List<string> peopleAdded;
+    public List<InterpaySaveObject> interPayColumns;
 
-    public SaveObject(List<Column> list, List<Person> peopleAdded)
+    public SaveObject(List<Column> list, List<Person> peopleAdded, List<Interpay> interPayColumns)
     {
         this.peopleAdded = peopleAdded.Select(x=>x.name).ToList();
+        this.interPayColumns = interPayColumns.Select(x => new InterpaySaveObject(x.paidFor.connectedContentItem.Column, x.isBeingPaidFor != null ? x.isBeingPaidFor.connectedContentItem.Column : 0)).ToList();
         columnRowAmount = new List<int>();
         contentItemData = new List<string>();
         columnRowAmount.Add(0); //because we aren't counting the rows and column counters. would be a waste since they are made automatically anyway
@@ -435,6 +458,5 @@ public class SaveObject
                 columnRowAmount[i]++;
             }
         }
-        
     }
 }
