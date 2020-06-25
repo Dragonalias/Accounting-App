@@ -44,21 +44,24 @@ public class ContentLogic : MonoBehaviour
         scrollRect.horizontalScrollbar.onValueChanged.AddListener((x) => AlwaysShowRowCount(x));
         scrollRect.verticalScrollbar.onValueChanged.AddListener((x) => AlwaysShowColumnCountAndPeopleNames(x));
     }
+
     public bool InsertColumn(int column)
     {
-        if (column != ContentItems.Count)
+        int count = ContentItems.Count;
+        if (column == count)
         {
-            int count = ContentItems.Count;
-            for (int i = column; i < count; i++)
-            {
-                MoveEntireColumn(i, i+1);
-            }
-            return false;
+            ContentItems.Insert(column, new Column());
+            ChangeWidth(RowWidth());
+            return true;
         }
 
-        ContentItems.Insert(column, new Column());
-        ChangeWidth(RowWidth());
-        return true;
+        for (int i = count - 1; i >= column; i--)
+        {
+            if (ContentItems[i].GetParentContentItem() == null) continue;
+            MoveEntireColumn(i, i + 1);
+        }
+
+        return false;
     }
 
     public void RemoveColumn(int column)
@@ -95,7 +98,7 @@ public class ContentLogic : MonoBehaviour
         
         ContentItems[targetColumn].AddRange(ContentItems[columnToBeMoved].ReturnRange(1, ContentItems[columnToBeMoved].Count -1));
         
-        SetContentItemParentPos(ContentItems[columnToBeMoved].GetContentItem(1), targetColumn, 1);
+        SetContentItemParentPos(ContentItems[columnToBeMoved].GetParentContentItem(), targetColumn, 1);
         
 
         ContentItems[columnToBeMoved].RemoveRange(1, ContentItems[columnToBeMoved].Count - 1);
@@ -338,6 +341,11 @@ public class Column
     public ContentItem GetCalculationContentItem()
     {
         return contentItems[contentItems.Count-1];
+    }
+
+    public ContentItem GetParentContentItem()
+    {
+        return contentItems.Count > 1 ? contentItems[1] : null;
     }
 
     public IEnumerable<ContentItem> ReturnRange(int skip, int take)

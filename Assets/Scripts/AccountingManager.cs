@@ -50,7 +50,7 @@ public class AccountingManager : MonoBehaviour
 
     public void AddColumn(int column)
     {
-        if (InsertColumn(column))
+        if (contentLogic.InsertColumn(column))
         {
             var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
             item.Instantiate(TMP_InputField.ContentType.IntegerNumber, column.ToString(), false, mainScroll);
@@ -64,10 +64,6 @@ public class AccountingManager : MonoBehaviour
         item.Instantiate(TMP_InputField.ContentType.IntegerNumber, row.ToString(), false, mainScroll);
         item.Savable = false;
         contentLogic.InsertContentCountItem(item, 0, row);
-    }
-    public bool InsertColumn(int column)
-    {
-        return contentLogic.InsertColumn(column);
     }
 
     public void RemoveContentItem(ContentItem item)
@@ -124,49 +120,40 @@ public class AccountingManager : MonoBehaviour
             PeopleAdded[i].DeleteButtonFromMenu(deletePerson);
         }
     }
-    private void AddRestColumns()
-    {
-        if (peopleAdded.Count <= 1) return; //Cant make interpay columns for only 1 person
-        //PersonA paid for joint payment
-        //PersonA paid for PersonB
-        //PersonB paid for PersonA
-        string label;
-        List<Person> people = new List<Person>();
-        for (int i = peopleAdded.Count - 2; i >= 0; i--)
-        {
-            people.Add(peopleAdded[peopleAdded.Count - 1]); //This person
-            people.Add(peopleAdded[i]); //Other person
 
-            label = string.Concat(people[0].name, "\n paid for \n", people[1].name);
-            CreateInterpay(label, people[0], people[1]);
-
-            label = string.Concat(people[1].name, "\n paid for \n", people[0].name);
-            CreateInterpay(label, people[1], people[0]);
-
-            people.Clear();
-        }
-        people.Add(peopleAdded[peopleAdded.Count - 1]);
-        label = string.Concat(people[0].name, "\n paid for \n Joint");
-
-        CreateInterpay(label, people[0]);
-    }
     public void CreateInterpay(string label, Person thisPerson, Person otherPerson = null)
     {
         var interpay = new Interpay(label, thisPerson, otherPerson);
         thisPerson.connectedColumns.Add(interpay);
-        if(otherPerson != null) otherPerson.connectedColumns.Add(interpay);
-        AddInterpayItem(interpay);
+        bool joint = true;
+        if (otherPerson != null)
+        {
+            otherPerson.connectedColumns.Add(interpay);
+            joint = false;
+        }
+        AddInterpayItem(interpay, joint);
     }
-    private void AddInterpayItem(Interpay interpay)
+    private void AddInterpayItem(Interpay interpay, bool joint)
     {
-        interPayColumns.Add(interpay);
-
+        
         var item = contentInputItem.GetInstance(contentLogic.transform).GetComponent<ContentItemInputField>();
         item.Instantiate(TMP_InputField.ContentType.Standard, interpay.name, false, mainScroll);
         item.Savable = false;
         item.MakeDeleteable(DeleteInterpay);
         interpay.connectedContentItem = item;
-        AddColumnBase(item, peopleAdded.Count+interPayColumns.Count);
+
+        int column;
+        if (joint)
+        {
+            interPayColumns.Insert(0, interpay);
+            column = peopleAdded.Count +1;
+        }
+        else
+        {
+            interPayColumns.Add(interpay);
+            column = peopleAdded.Count + interPayColumns.Count;
+        }
+        AddColumnBase(item, column);
     }
     public void DeletePerson(ContentItem item)
     {
@@ -418,6 +405,10 @@ public class AccountingManager : MonoBehaviour
 
     public void Calculate()
     {
+        for (int i = 0; i < interPayColumns.Count; i++)
+        {
+
+        }
         float result = 2530;
         informationResultManager.AddResult("person1", "person2", result);
     }
