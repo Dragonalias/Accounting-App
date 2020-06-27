@@ -8,14 +8,9 @@ public class PoolObject : MonoBehaviour
 
     public PoolObject GetInstance(Transform parent)
     {
-        if (stack.Count > 0)
-        {
-            var obj = stack.Pop();
-            if (obj == null) return GetInstance(parent);
-            obj.transform.SetParent(parent);
-            return obj;
-        }
-        return Instantiate(this, parent);
+        var obj = GetInstance();
+        obj.transform.SetParent(parent);
+        return obj;
     }
 
     public PoolObject GetInstance()
@@ -24,6 +19,7 @@ public class PoolObject : MonoBehaviour
         {
             var obj = stack.Pop();
             if (obj == null) return GetInstance();
+            obj.gameObject.SetActive(true);
             return obj;
         }
         return Instantiate(this);
