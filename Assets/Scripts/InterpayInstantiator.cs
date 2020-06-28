@@ -1,10 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor.Networking.PlayerConnection;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UIElements;
 
 public class InterpayInstantiator : MonoBehaviour
 {
@@ -58,7 +54,7 @@ public class InterpayInstantiator : MonoBehaviour
     private void MakeButton(Person otherPerson = null)
     {
         var btn = btnPrefab.GetInstance(transform).GetComponent<InterpayInstantiatorButton>();
-        btn.Activate();
+        btn.Init();
         string buttonLabel;
         string columnLabel;
         GetLabels(out buttonLabel, out columnLabel, otherPerson);

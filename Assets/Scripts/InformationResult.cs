@@ -7,4 +7,9 @@ public class InformationResult : MonoBehaviour
 {
     public TMPro.TMP_Text people;
     public TMPro.TMP_InputField amount;
+
+    public void Init()
+    {
+        transform.localScale = Vector3.one;
+    }
 }

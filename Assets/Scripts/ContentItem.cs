@@ -21,6 +21,10 @@ public abstract class ContentItem : MonoBehaviour
     public bool Savable { get => savable; set => savable = value; }
     public ContentItem Parent { get => parent; set => parent = value; }
 
+    public virtual void Instantiate()
+    {
+        transform.localScale = Vector3.one;
+    }
     public virtual void SetActive(bool active)
     {
         if (active == false) ResetItem();

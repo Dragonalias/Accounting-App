@@ -24,6 +24,7 @@ public class ContentItemInputField : ContentItem
 
     public void Instantiate(TMP_InputField.ContentType type, string text, bool interactible, ScrollRect mainScroll)
     {
+        base.Instantiate();
         GetComponent<FixScroll>().MainScroll = mainScroll;
         SetType(type);
         SetText(text);

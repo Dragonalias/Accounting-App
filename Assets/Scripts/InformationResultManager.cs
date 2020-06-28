@@ -9,6 +9,7 @@ public class InformationResultManager : MonoBehaviour
     public void AddResult(string personOwes, string isOwnedperson, float amount)
     {
         InformationResult result = informationPrefab.GetInstance(transform).GetComponent<InformationResult>();
+        result.Init();
         result.people.text = string.Concat(personOwes, " Owes ", isOwnedperson, ":");
         result.amount.text = amount.ToString();
         result.amount.textComponent.text = result.amount.text; //Wouldn't show properly unless i did this

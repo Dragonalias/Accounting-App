@@ -9,6 +9,10 @@ public class InterpayInstantiatorButton : MonoBehaviour
     public Button thisButton;
     public TMPro.TMP_Text buttonText;
 
+    public void Init()
+    {
+        transform.localScale = Vector3.one;
+    }
     public void Activate()
     {
         gameObject.SetActive(true);

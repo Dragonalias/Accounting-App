@@ -222,6 +222,7 @@ public class AccountingManager : MonoBehaviour
     private void AddRowButton(int column, int row)
     {
         var item = contentButtonItem.GetInstance(contentLogic.transform).GetComponent<ContentItemButton>();
+        item.Instantiate();
         item.Savable = false;
         item.MakeClickable(AddFinance);
         contentLogic.InsertContentChildItem(item, column, row);
