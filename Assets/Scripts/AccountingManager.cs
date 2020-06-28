@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Linq;
 using TMPro;
+using System;
 
 public class AccountingManager : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class AccountingManager : MonoBehaviour
     [SerializeField] private PoolObject contentFinanceItem;
 
     private List<Person> peopleAdded = new List<Person>();
+
+    private int jointColumnsAmount = 0;
     private List<Interpay> interPayColumns = new List<Interpay>();
 
     public List<Person> PeopleAdded { get => peopleAdded; }
@@ -146,6 +149,7 @@ public class AccountingManager : MonoBehaviour
         if (joint)
         {
             interPayColumns.Insert(0, interpay);
+            jointColumnsAmount++;
             column = peopleAdded.Count +1;
         }
         else
@@ -208,31 +212,17 @@ public class AccountingManager : MonoBehaviour
         else
         {
             interPay.paidFor.UpdateMenuWithNewPerson();
+            jointColumnsAmount--;
         }
 
         interPayColumns.RemoveAt(index);
         contentLogic.RemoveColumn(interPayColumn);
-
-        foreach (var col in interPayColumns)
-        {
-            Debug.Log("interpayColumns: " +col.name);
-        }
-        foreach (var person in peopleAdded)
-        {
-            Debug.Log("people: " + person.name);
-
-            foreach (var interpayCol in person.connectedColumns)
-            {
-                Debug.Log("PeopleinterpayColumns: " + interpayCol.name);
-            }
-        }
     }
 
     private void AddRowButton(int column, int row)
     {
         var item = contentButtonItem.GetInstance(contentLogic.transform).GetComponent<ContentItemButton>();
         item.Savable = false;
-        item.SetActive(true);
         item.MakeClickable(AddFinance);
         contentLogic.InsertContentChildItem(item, column, row);
     }
@@ -243,7 +233,6 @@ public class AccountingManager : MonoBehaviour
         item.InputField.readOnly = true;
         item.SetCalculationColor();
         item.Savable = false;
-        item.SetActive(true);
 
         contentLogic.InsertContentChildItem(item, column, row);
     }
@@ -382,6 +371,8 @@ public class AccountingManager : MonoBehaviour
                 LoadFinanceItems(saveobj, ref contentCounter, (peopleAdded.Count + interPayColumns.Count));
             }
         }
+
+        Calculate();
     }
     private void LoadFinanceItems(SaveObject saveobj,ref int contentCounter, int column)
     {
@@ -397,6 +388,7 @@ public class AccountingManager : MonoBehaviour
     {
         peopleAdded.Clear();
         interPayColumns.Clear();
+        informationResultManager.Clear();
         for (int i = contentLogic.ContentItems.Count - 1; i >= 1; i--)
         {
             contentLogic.RemoveColumn(i);
@@ -405,25 +397,59 @@ public class AccountingManager : MonoBehaviour
 
     public void Calculate()
     {
-        for (int i = 0; i < interPayColumns.Count; i++)
-        {
+        if (interPayColumns.Count == 0) return;
 
+        if (informationResultManager.IsShowingResult())
+        {
+            informationResultManager.Clear();
         }
-        float result = 2530;
-        informationResultManager.AddResult("person1", "person2", result);
-    }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        var debtTracker = new AccountingDictionaryWrapper();
+
+        //write down all debt
+        if (jointColumnsAmount > 0)
         {
-            for (int i = 0; i < contentLogic.ContentItems.Count; i++)
+            for (int i = 0; i < jointColumnsAmount; i++)
             {
-                for (int j = 0; j < contentLogic.ContentItems[i].Count; j++)
+                for (int j = 0; j < PeopleAdded.Count; j++)
                 {
-                    Debug.Log("column: "+ i + "row: " +j+ "type: "+ contentLogic.ContentItems[i].GetContentItem(j));
+                    var interpayColumn = interPayColumns[i];
+                    if (interpayColumn.paidFor == PeopleAdded[j]) continue;
+
+                    float amount = float.Parse(contentLogic.ContentItems[interpayColumn.connectedContentItem.Column].GetCalculationContentItem().GetData()) / PeopleAdded.Count;
+                    debtTracker.Add((interpayColumn.paidFor.name, PeopleAdded[j].name), amount);
                 }
+                
             }
+        }
+        for (int i = jointColumnsAmount; i < interPayColumns.Count; i++)
+        {
+            var interpayColumn = interPayColumns[i];
+
+            float amount = float.Parse(contentLogic.ContentItems[interpayColumn.connectedContentItem.Column].GetCalculationContentItem().GetData());
+            debtTracker.Add((interpayColumn.paidFor.name, interpayColumn.isBeingPaidFor.name), amount);
+        }
+
+        //Time to pay up
+        foreach (var item in debtTracker.tupleDic)
+        {
+            string person1;
+            string person2;
+            float result;
+            if (item.Value > 0)
+            {
+                person2 = item.Key.Item1;
+                person1 = item.Key.Item2;
+                result = item.Value;
+            }
+            else
+            {
+                person2 = item.Key.Item2;
+                person1 = item.Key.Item1;
+                result = item.Value *-1;
+            }
+            
+            informationResultManager.AddResult(person1, person2, result);
         }
     }
 }
@@ -474,5 +500,45 @@ public struct SaveItemObject
     public SaveItemObject(string financeData) : this()
     {
         this.financeData = financeData;
+    }
+}
+
+public class AccountingDictionaryWrapper
+{
+    public Dictionary<(string, string), float> tupleDic = new Dictionary<(string, string), float>();
+
+    public int Count => tupleDic.Count;
+    public void Add((string, string) key, float amount)
+    {
+        if (!ContainsKey(key))
+        {
+            tupleDic.Add(key, amount);
+            return;
+        }
+
+        
+        if (tupleDic.ContainsKey(key))
+        {
+            tupleDic[key] += amount;
+        }
+        else
+        {
+            tupleDic[SwitchKey(key)] -= amount;
+        }
+    }
+
+    public bool ContainsKey((string, string) key)
+    {
+        if (tupleDic.ContainsKey(key))
+        {
+            return true;
+        }
+        var newKey = SwitchKey(key);
+        return tupleDic.ContainsKey(newKey);
+    }
+
+    private (string, string) SwitchKey((string, string) key)
+    {
+        return (key.Item2, key.Item1);
     }
 }

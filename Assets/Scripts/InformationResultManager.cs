@@ -14,8 +14,15 @@ public class InformationResultManager : MonoBehaviour
         result.amount.textComponent.text = result.amount.text; //Wouldn't show properly unless i did this
     }
 
+    public bool IsShowingResult()
+    {
+        return transform.childCount != 0;
+    }
+
     public void Clear()
     {
+        if (transform.childCount == 0) return;
+
         for (int i = 0; i < transform.childCount; i++)
         {
             transform.GetChild(i).gameObject.SetActive(false);
