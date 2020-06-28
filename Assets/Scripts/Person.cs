@@ -8,42 +8,9 @@ public class Person
     public ContentItemPerson connectedContentItem;
     public List<Interpay> connectedColumns = new List<Interpay>();
 
-    private Dictionary<string, float> debtBook = new Dictionary<string, float>();
-
     public Person(string name)
     {
         this.name = name;
-    }
-
-    public void WriteDebt(string otherPerson, float amount)
-    {
-        if (!debtBook.ContainsKey(otherPerson))
-        {
-            debtBook.Add(otherPerson, amount);
-        }
-        else
-        {
-            debtBook[otherPerson] += amount;
-        }
-    }
-
-    public int GetDebtAmount()
-    {
-        return debtBook.Count;
-    }
-
-    public float GetAmount(string otherPerson)
-    {
-        if (debtBook.ContainsKey(otherPerson))
-        {
-            return debtBook[otherPerson];
-        }
-        return 0;
-    }
-
-    public void ClearAllDebt()
-    {
-        debtBook.Clear();
     }
 
     public void UpdateName(string newName)
