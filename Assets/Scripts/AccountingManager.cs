@@ -148,9 +148,9 @@ public class AccountingManager : MonoBehaviour
         int column;
         if (joint)
         {
-            interPayColumns.Insert(0, interpay);
+            interPayColumns.Insert(jointColumnsAmount, interpay);
+            column = peopleAdded.Count +1 + jointColumnsAmount;
             jointColumnsAmount++;
-            column = peopleAdded.Count +1;
         }
         else
         {
@@ -389,6 +389,7 @@ public class AccountingManager : MonoBehaviour
         peopleAdded.Clear();
         interPayColumns.Clear();
         informationResultManager.Clear();
+        jointColumnsAmount = 0;
         for (int i = contentLogic.ContentItems.Count - 1; i >= 1; i--)
         {
             contentLogic.RemoveColumn(i);
