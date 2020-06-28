@@ -248,7 +248,7 @@ public class AccountingManager : MonoBehaviour
         item.Savable = true;
         item.InputField.onValidateInput = delegate (string input, int charIndex, char addedChar) { return FinanceValidation(addedChar); };
         item.InputField.onEndEdit.AddListener((x)=>UpdateFinance(item));
-        item.MakeDeleteable((x)=> { RemoveContentItem(x); UpdateFinance(x);  });
+        item.MakeDeleteable((x)=> { RemoveContentItem(x); CalculateAndSetFinance(column);  });
 
         if (noteText != null) item.SetNoteText(noteText);
         if (contentLogic.ContentItems[column].Count >= contentLogic.ContentItems[0].Count) AddRow(contentLogic.ContentItems[column].Count);
