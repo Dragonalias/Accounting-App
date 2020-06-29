@@ -397,6 +397,7 @@ public class AccountingManager : MonoBehaviour
         }
     }
 
+    //The amount of for loops here is insane wtf
     public void Calculate()
     {
         if (interPayColumns.Count == 0) return;
@@ -451,7 +452,14 @@ public class AccountingManager : MonoBehaviour
                 result = item.Value *-1;
             }
             
-            informationResultManager.AddResult(person1, person2, result);
+            informationResultManager.AddResult2People(person1, person2, result);
+        }
+
+        for (int i = 0; i < PeopleAdded.Count; i++)
+        {
+            Person person = PeopleAdded[i];
+            float amount = float.Parse(contentLogic.ContentItems[person.connectedContentItem.Column].GetCalculationContentItem().GetData());
+            informationResultManager.AddResult1Person(person.name, amount);
         }
     }
 }
