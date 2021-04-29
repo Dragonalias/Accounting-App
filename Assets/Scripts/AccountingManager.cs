@@ -317,7 +317,6 @@ public class AccountingManager : MonoBehaviour
     {
         Debug.Log("loading: " +yearAndMonth);
         string loadedString = SaveSystem.Load(yearAndMonth + ".json");
-        Debug.Log("loaded: " +loadedString);
         if (loadedString == null)
         {
             ClearUIExceptCounters();

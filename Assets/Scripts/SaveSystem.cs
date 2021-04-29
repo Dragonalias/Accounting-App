@@ -34,6 +34,7 @@ public static class SaveSystem
             Debug.Log("No file found!");
             return null;
         }
+        Debug.Log("Month loaded from: " + filePath);
         return File.ReadAllText(filePath);
     }
     public static bool DeleteSave(string saveName)
