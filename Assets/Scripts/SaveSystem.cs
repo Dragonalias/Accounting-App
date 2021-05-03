@@ -13,18 +13,29 @@ public static class SaveSystem
         }
     }
 
-    public static bool Save(string saveName, string saveString)
+    public static bool SavePathExists(string saveName)
     {
         string filePath = SAVE_FOLDER + saveName;
-        bool overriding = false;
-        if (File.Exists(filePath))
-        {
-            Debug.Log("Overriding a save!");
-            overriding = true;
-        }
+        return File.Exists(filePath);
+    }
+    public static void Save(string saveName, string saveString)
+    {
+        string filePath = SAVE_FOLDER + saveName;
+
         Debug.Log("Month saved to: " + filePath);
         File.WriteAllText(filePath, saveString);
-        return overriding;
+    }
+    public static void SaveWithBackup(string saveName, string saveString)
+    {
+        string filePath = SAVE_FOLDER + saveName;
+        string backupPath = filePath + ".backup";
+        if (File.Exists(backupPath))
+        {
+            File.Delete(backupPath);
+        }
+        File.Move(filePath, backupPath);
+        Debug.Log("file backed up: " + filePath);
+        Save(saveName, saveString);
     }
     public static string Load(string saveName)
     {

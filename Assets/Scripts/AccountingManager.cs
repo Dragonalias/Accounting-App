@@ -284,14 +284,30 @@ public class AccountingManager : MonoBehaviour
 
     public void SaveMonth(string month, string year)
     {
+        SaveMonth(string.Concat(year, " ", month));
+    }
+
+    public void SaveMonth(string name)
+    {
         SaveObject saveobj = new SaveObject(contentLogic.ContentItems, peopleAdded, interPayColumns);
         string json = JsonUtility.ToJson(saveobj);
-        string name = string.Concat(year, " ", month);
-        if (!SaveSystem.Save(name + ".json", json))//Save does not override anything, meaning that month must be added
+        string savePath = name + ".json";
+        if (!SaveSystem.SavePathExists(savePath))//Save does not override anything, meaning that month must be added
         {
-            monthDropDown.AddMonth(name); 
+            SaveSystem.Save(savePath, json);
+            monthDropDown.AddMonth(name);
+            monthDropDown.ShowMonth(name);
         }
-        monthDropDown.ShowMonth(name);
+        else
+        {
+            popupSystem.PopupConfirmation
+            ("you want to override save?",
+            () =>
+            {
+                SaveSystem.SaveWithBackup(savePath, json);
+                monthDropDown.ShowMonth(name);
+            });
+        }
     }
 
     public void SaveMonthOnClick()
@@ -302,13 +318,8 @@ public class AccountingManager : MonoBehaviour
         }
         else
         {
-            popupSystem.PopupConfirmation
-            ("you want to override save?",
-            () =>
-            {
-                var seperatedYearAndMonth = monthDropDown.DropdownCurrentText.Split(' ');
-                SaveMonth(seperatedYearAndMonth[1], seperatedYearAndMonth[0]);
-            });
+            var seperatedYearAndMonth = monthDropDown.DropdownCurrentText.Split(' ');
+            SaveMonth(seperatedYearAndMonth[1], seperatedYearAndMonth[0]);
         }
         
     }
